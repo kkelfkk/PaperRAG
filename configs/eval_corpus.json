@@ -1,0 +1,38 @@
+{
+  "corpus_id": "paperrag-agent-rag-v1",
+  "description": "Version-pinned public papers for the first PaperRAG retrieval benchmark.",
+  "papers": [
+    {
+      "arxiv_id": "2005.11401v4",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "short_name": "RAG",
+      "url": "https://arxiv.org/pdf/2005.11401v4.pdf",
+      "filename": "2005.11401v4_rag.pdf",
+      "sha256": "23e3249e9a1e75418d82efecab0ea8c4d033b89c93742f63208d47ce01f21233"
+    },
+    {
+      "arxiv_id": "2210.03629v3",
+      "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+      "short_name": "ReAct",
+      "url": "https://arxiv.org/pdf/2210.03629v3.pdf",
+      "filename": "2210.03629v3_react.pdf",
+      "sha256": "f285b0971ae4a790e402fb93966bed3adde2cf0a04977d08b2b40d6ab0cace69"
+    },
+    {
+      "arxiv_id": "2310.11511v1",
+      "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "short_name": "Self-RAG",
+      "url": "https://arxiv.org/pdf/2310.11511v1.pdf",
+      "filename": "2310.11511v1_self-rag.pdf",
+      "sha256": "d9eaa1398abac0df67a9d0933a5bf8b6d9d83d2e72da2a486073cd842dd52978"
+    },
+    {
+      "arxiv_id": "2401.15884v3",
+      "title": "Corrective Retrieval Augmented Generation",
+      "short_name": "CRAG",
+      "url": "https://arxiv.org/pdf/2401.15884v3.pdf",
+      "filename": "2401.15884v3_crag.pdf",
+      "sha256": "975aa1fd3c1b603126e93ff99d6504858b61301bf1d34c9df88ebe53a0b026cb"
+    }
+  ]
+}

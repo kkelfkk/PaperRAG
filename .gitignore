@@ -27,6 +27,7 @@ venv/
 # Local data and model artifacts
 data/papers/*
 !data/papers/.gitkeep
+data/eval/work/
 storage/
 models/
 :memory:.ses

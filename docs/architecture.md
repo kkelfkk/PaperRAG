@@ -151,6 +151,22 @@ client converts backend and connection failures into short user-facing errors
 without displaying raw transport diagnostics. Streamlit remains an optional
 dependency so backend-only installation stays lightweight.
 
+## Decision 011: version-pinned public evaluation corpus
+
+The starter benchmark uses four public arXiv papers covering foundational RAG,
+ReAct, Self-RAG, and CRAG. The manifest pins both arXiv version and SHA-256, and
+the downloader accepts only the expected HTTPS arXiv path, enforces the upload
+size limit, validates the PDF header, and removes incomplete files.
+
+Evaluation indexing uses a separate local Qdrant database and records document
+IDs, chunk counts, file hashes, embedding model, and a corpus fingerprint in an
+ignored lock file. The fingerprint also covers the embedding and chunking
+configuration. Thirty committed question seeds span factual, terminology,
+comparison, and multi-evidence queries. Hybrid retrieval generates 20
+annotation candidates per question, but all relevance labels remain empty until
+a human reviews the cited pages; the project never converts retrieval output
+into fake ground truth.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.

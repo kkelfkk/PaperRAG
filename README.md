@@ -55,7 +55,8 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Generate DeepSeek answers with validated page-level citations
 - [x] Add FastAPI endpoints for indexing, search, and grounded answers
 - [x] Add a versioned retrieval evaluation format, runner, and IR metrics
-- [ ] Manually label the first 30-question evaluation set
+- [x] Build a pinned four-paper corpus and 30-question annotation worksheet
+- [ ] Manually verify relevant chunks for the 30-question evaluation set
 - [x] Add BM25 and Reciprocal Rank Fusion
 - [x] Add a cross-encoder reranker
 - [x] Add document, section, and page-range metadata filters
@@ -266,7 +267,27 @@ uv run python -m app.evaluation.cli \
   data/eval/my_retrieval.json --validate-only
 ```
 
-After the dataset validates, evaluate all three strategies against exactly the
+PaperRAG includes a reproducible starter corpus containing version-pinned RAG,
+ReAct, Self-RAG, and CRAG papers. PDF checksums are verified before indexing.
+Use a separate local database so your personal knowledge base is untouched:
+
+```bash
+uv run python -m scripts.eval_corpus download
+uv run python -m scripts.eval_corpus index \
+  --db-path storage/qdrant_eval \
+  --collection paperrag_eval_v1 --recreate
+uv run python -m scripts.eval_corpus worksheet \
+  --db-path storage/qdrant_eval \
+  --collection paperrag_eval_v1 --top-k 20
+```
+
+The last command writes `data/eval/work/retrieval_candidates.json`, containing
+30 questions and the top 20 Hybrid candidates for each. This working file is
+ignored by Git. A reviewer must inspect the cited PDF pages and fill in every
+`relevant_chunk_ids` list before converting it to the validated evaluation
+format; empty labels are never treated as benchmark data.
+
+After the dataset validates, evaluate all four strategies against exactly the
 same labels and corpus:
 
 ```bash

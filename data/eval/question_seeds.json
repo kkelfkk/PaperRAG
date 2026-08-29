@@ -1,0 +1,39 @@
+{
+  "corpus_id": "paperrag-agent-rag-v1",
+  "questions": [
+    {"query_id":"rag-fact-001","question":"RAG 模型中的参数化记忆和非参数化记忆分别由什么组成？","question_type":"factual","target_papers":["2005.11401v4"]},
+    {"query_id":"rag-term-002","question":"RAG-Sequence 和 RAG-Token 在使用检索文档时有什么区别？","question_type":"terminology","target_papers":["2005.11401v4"]},
+    {"query_id":"rag-fact-003","question":"原始 RAG 系统如何构建 Wikipedia 文档索引？","question_type":"factual","target_papers":["2005.11401v4"]},
+    {"query_id":"rag-fact-004","question":"RAG 的检索器和生成器在训练过程中如何更新？","question_type":"factual","target_papers":["2005.11401v4"]},
+    {"query_id":"rag-multi-005","question":"原始 RAG 论文在哪些知识密集型任务上进行了评估，主要结论是什么？","question_type":"multi_evidence","target_papers":["2005.11401v4"]},
+
+    {"query_id":"react-term-001","question":"ReAct 如何交错生成 reasoning traces 和 task-specific actions？","question_type":"terminology","target_papers":["2210.03629v3"]},
+    {"query_id":"react-fact-002","question":"推理轨迹和外部行动在 ReAct 中分别发挥什么作用？","question_type":"factual","target_papers":["2210.03629v3"]},
+    {"query_id":"react-multi-003","question":"ReAct 在 HotpotQA 和 FEVER 上如何与外部知识源交互并减少错误？","question_type":"multi_evidence","target_papers":["2210.03629v3"]},
+    {"query_id":"react-fact-004","question":"ReAct 在 ALFWorld 和 WebShop 上报告了怎样的性能提升？","question_type":"factual","target_papers":["2210.03629v3"]},
+    {"query_id":"react-fact-005","question":"ReAct 的实验使用了多少个 in-context examples？","question_type":"factual","target_papers":["2210.03629v3"]},
+
+    {"query_id":"selfrag-term-001","question":"Self-RAG 定义了哪几类 reflection tokens，它们各自评估什么？","question_type":"terminology","target_papers":["2310.11511v1"]},
+    {"query_id":"selfrag-fact-002","question":"Self-RAG 如何决定是否需要检索外部段落？","question_type":"factual","target_papers":["2310.11511v1"]},
+    {"query_id":"selfrag-multi-003","question":"Self-RAG 的 critic model 和 generator model 分别如何训练？","question_type":"multi_evidence","target_papers":["2310.11511v1"]},
+    {"query_id":"selfrag-fact-004","question":"Self-RAG 在推理阶段如何利用 relevance、support 和 utility 信号选择输出？","question_type":"factual","target_papers":["2310.11511v1"]},
+    {"query_id":"selfrag-multi-005","question":"Self-RAG 使用了哪些任务评估事实性、引用质量和通用能力？","question_type":"multi_evidence","target_papers":["2310.11511v1"]},
+
+    {"query_id":"crag-term-001","question":"CRAG 中的 retrieval evaluator 输出什么信号，这些信号会触发哪些动作？","question_type":"terminology","target_papers":["2401.15884v3"]},
+    {"query_id":"crag-fact-002","question":"CRAG 为什么在静态语料检索之外引入网页搜索？","question_type":"factual","target_papers":["2401.15884v3"]},
+    {"query_id":"crag-term-003","question":"CRAG 的 decompose-then-recompose 算法如何处理检索文档？","question_type":"terminology","target_papers":["2401.15884v3"]},
+    {"query_id":"crag-fact-004","question":"CRAG 如何处理检索结果被判断为错误或模糊的情况？","question_type":"factual","target_papers":["2401.15884v3"]},
+    {"query_id":"crag-multi-005","question":"CRAG 在哪些类型的数据集上验证了方法，实验结论是什么？","question_type":"multi_evidence","target_papers":["2401.15884v3"]},
+
+    {"query_id":"compare-001","question":"原始 RAG、Self-RAG 和 CRAG 在何时执行检索这一点上有什么区别？","question_type":"comparison","target_papers":["2005.11401v4","2310.11511v1","2401.15884v3"]},
+    {"query_id":"compare-002","question":"Self-RAG 与 CRAG 分别如何判断检索证据是否可靠？","question_type":"comparison","target_papers":["2310.11511v1","2401.15884v3"]},
+    {"query_id":"compare-003","question":"ReAct 的外部行动与 CRAG 的网页搜索在系统目标上有何异同？","question_type":"comparison","target_papers":["2210.03629v3","2401.15884v3"]},
+    {"query_id":"compare-004","question":"原始 RAG 和 Self-RAG 如何以不同方式将多个检索段落用于生成？","question_type":"comparison","target_papers":["2005.11401v4","2310.11511v1"]},
+    {"query_id":"compare-005","question":"ReAct 与 Self-RAG 如何分别提高模型输出的可解释性或可控性？","question_type":"comparison","target_papers":["2210.03629v3","2310.11511v1"]},
+    {"query_id":"compare-006","question":"四篇论文分别针对传统语言模型或传统 RAG 的什么核心缺陷？","question_type":"multi_evidence","target_papers":["2005.11401v4","2210.03629v3","2310.11511v1","2401.15884v3"]},
+    {"query_id":"compare-007","question":"哪些方法显式评价中间证据或中间输出，评价结果如何影响后续步骤？","question_type":"multi_evidence","target_papers":["2310.11511v1","2401.15884v3"]},
+    {"query_id":"compare-008","question":"四种方法分别使用了哪些外部知识来源或交互环境？","question_type":"multi_evidence","target_papers":["2005.11401v4","2210.03629v3","2310.11511v1","2401.15884v3"]},
+    {"query_id":"compare-009","question":"Self-RAG 的 reflection tokens 与 ReAct 的 reasoning traces 有什么本质区别？","question_type":"comparison","target_papers":["2210.03629v3","2310.11511v1"]},
+    {"query_id":"compare-010","question":"如果初始检索结果不相关，原始 RAG、Self-RAG 和 CRAG 各自会如何处理？","question_type":"comparison","target_papers":["2005.11401v4","2310.11511v1","2401.15884v3"]}
+  ]
+}

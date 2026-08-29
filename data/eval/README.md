@@ -19,6 +19,21 @@ Start with 30 reviewed questions across factual, terminology, comparison, and
 multi-evidence categories. Grow to 100-200 only after the annotation process is
 consistent.
 
+`question_seeds.json` contains the first 30 questions for the pinned public
+corpus in `configs/eval_corpus.json`. Generate the local annotation worksheet:
+
+```bash
+uv run python -m scripts.eval_corpus download
+uv run python -m scripts.eval_corpus index \
+  --db-path storage/qdrant_eval --collection paperrag_eval_v1 --recreate
+uv run python -m scripts.eval_corpus worksheet \
+  --db-path storage/qdrant_eval --collection paperrag_eval_v1
+```
+
+The generated `data/eval/work/retrieval_candidates.json` deliberately contains
+empty labels. Inspect source pages, add all relevant chunk IDs, record uncertain
+decisions, and have a second pass review comparison and multi-evidence items.
+
 Validate a dataset without loading Qdrant or an embedding model:
 
 ```bash
