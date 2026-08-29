@@ -3,9 +3,8 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: grounded-answer baseline. PaperRAG can parse and chunk text-based PDF
-> papers, retrieve evidence from local Qdrant, and use DeepSeek to produce an
-> answer with validated page-level citations or an explicit abstention.
+> Status: API-ready grounded-answer baseline. PaperRAG exposes PDF indexing,
+> dense search, and DeepSeek grounded answers through a tested FastAPI service.
 
 ## Why PaperRAG?
 
@@ -52,7 +51,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Implement page-aware recursive chunking
 - [x] Build a dense-retrieval baseline with Qdrant
 - [x] Generate DeepSeek answers with validated page-level citations
-- [ ] Add a FastAPI endpoint
+- [x] Add FastAPI endpoints for indexing, search, and grounded answers
 - [ ] Build the first labeled evaluation set
 - [ ] Add BM25 and Reciprocal Rank Fusion
 - [ ] Add a cross-encoder reranker
@@ -162,6 +161,24 @@ The generator sends only the retrieved passages to DeepSeek, requires JSON
 output, validates every `[S1]`-style marker, rejects unknown or missing source
 IDs, and returns the corresponding paper, section, and physical page metadata.
 If retrieval returns no evidence, it abstains without calling the LLM API.
+
+Start the HTTP API:
+
+```bash
+uv run uvicorn app.api.main:app --reload
+```
+
+Open `http://127.0.0.1:8000/docs` for the interactive API interface. Available
+endpoints are:
+
+- `GET /health` - lightweight health check;
+- `POST /v1/documents/index` - upload and index a PDF (50 MB limit);
+- `POST /v1/search` - return ranked evidence with source metadata;
+- `POST /v1/ask` - generate a validated DeepSeek answer with citations.
+
+The embedding model and database are loaded lazily, so `/health` does not trigger
+a model download. Uploaded PDFs are processed through a temporary file and
+deleted after indexing.
 
 Run the tests with:
 

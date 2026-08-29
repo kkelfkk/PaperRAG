@@ -62,6 +62,18 @@ the JSON list exactly matches markers in the answer, and that a non-abstained
 answer cites at least one source. Empty retrieval results abstain before any API
 request is made.
 
+## Decision 005: lazy FastAPI application service
+
+FastAPI exposes health, PDF indexing, dense search, and grounded-answer routes.
+The heavyweight embedding model and local Qdrant client are initialized only
+when a pipeline endpoint is first called, then shared across requests and closed
+during application lifespan shutdown. Local-mode operations are serialized to
+avoid concurrent access to the embedded database.
+
+PDF uploads are streamed in bounded blocks to a temporary file, limited to 50
+MB, validated by the existing parser, and deleted in a `finally` block. Original
+filenames are reduced to their basename before entering citation metadata.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.
