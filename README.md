@@ -56,7 +56,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add FastAPI endpoints for indexing, search, and grounded answers
 - [x] Add a versioned retrieval evaluation format, runner, and IR metrics
 - [x] Build a pinned four-paper corpus and 30-question annotation worksheet
-- [ ] Manually verify relevant chunks for the 30-question evaluation set (10/30 complete)
+- [ ] Manually verify relevant chunks for the 30-question evaluation set (20/30 complete)
 - [x] Add BM25 and Reciprocal Rank Fusion
 - [x] Add a cross-encoder reranker
 - [x] Add document, section, and page-range metadata filters
@@ -310,21 +310,23 @@ Recall@K, MRR@K, and nDCG@K, followed by macro averages. The committed template
 contains placeholders, not benchmark results; scores should only be published
 after real papers and labels are fixed.
 
-### First retrieval benchmark
+### Current retrieval benchmark
 
-The first manually reviewed development set contains five RAG and five ReAct
-questions. All strategies used the same 538-chunk corpus, labels, and Top-10
-cutoff. Results from this small set are diagnostic rather than final:
+The current manually reviewed development set contains 20 questions across
+RAG, ReAct, Self-RAG, and CRAG. All strategies used the same 538-chunk corpus,
+labels, and Top-10 cutoff. Results remain diagnostic until all 30 questions are
+reviewed:
 
 | Strategy | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
 | --- | ---: | ---: | ---: | ---: |
-| Dense | 10.00% | 10.00% | 8.33% | 6.19% |
-| BM25 | 18.33% | 30.83% | 32.25% | 28.45% |
-| Hybrid RRF | 10.83% | 22.50% | 16.17% | 15.18% |
-| Hybrid + reranker | **34.17%** | **45.83%** | **35.00%** | **32.58%** |
+| Dense | 11.25% | 14.58% | 16.83% | 8.70% |
+| BM25 | 10.42% | 29.58% | 24.47% | 21.92% |
+| Hybrid RRF | 16.25% | 22.08% | 18.25% | 14.90% |
+| Hybrid + reranker | **34.17%** | **41.67%** | **39.00%** | **30.31%** |
 
-The cross-encoder recovers substantially more relevant passages, while BM25
-beats the current dense baseline on Chinese-query/English-document retrieval.
+The cross-encoder continues to recover substantially more relevant passages,
+while BM25 still beats the current dense baseline at Recall@10 on
+Chinese-query/English-document retrieval.
 See [`docs/evaluation.md`](docs/evaluation.md) for the fixed configuration,
 interpretation, and limitations.
 

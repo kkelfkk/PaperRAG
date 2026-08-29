@@ -39,6 +39,10 @@ cover the five RAG and five ReAct questions and are tied to the corpus
 fingerprint recorded in the dataset description. Treat this as a development
 set while the remaining questions receive a second manual review.
 
+`paperrag_retrieval_20.json` extends that immutable first subset with five
+Self-RAG and five CRAG questions. Keeping both versions makes the 10-question
+and 20-question experiment reports independently reproducible.
+
 Validate a dataset without loading Qdrant or an embedding model:
 
 ```bash

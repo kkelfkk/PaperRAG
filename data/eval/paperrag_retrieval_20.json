@@ -1,0 +1,168 @@
+{
+  "name": "paperrag-retrieval-20",
+  "version": "0.2.0",
+  "description": "Twenty manually reviewed Chinese retrieval questions for corpus fingerprint eccd943ec6d334ad77fa2478e785fc71c77338e2ebd78fa1a93324aea7144eda.",
+  "corpus_id": "paperrag-agent-rag-v1",
+  "queries": [
+    {
+      "query_id": "rag-fact-001",
+      "question": "RAG 模型中的参数化记忆和非参数化记忆分别由什么组成？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["98917e49d604e8a6cfab2ceb", "110e608a0cba4adf094d986e"],
+      "relevance_grades": {"98917e49d604e8a6cfab2ceb": 2, "110e608a0cba4adf094d986e": 1},
+      "notes": "沿用 0.1.0 人工标签：RAG 第 1 页摘要和第 2 页引言。"
+    },
+    {
+      "query_id": "rag-term-002",
+      "question": "RAG-Sequence 和 RAG-Token 在使用检索文档时有什么区别？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["0d3ca9040052f75da2e7e7b1", "2585e6c02a15763152a808d8", "3238601bf3432d323a5fc68d"],
+      "relevance_grades": {"0d3ca9040052f75da2e7e7b1": 2, "2585e6c02a15763152a808d8": 2, "3238601bf3432d323a5fc68d": 1},
+      "notes": "沿用 0.1.0 人工标签：RAG 第 1 页摘要及第 3 页 2/2.1 节。"
+    },
+    {
+      "query_id": "rag-fact-003",
+      "question": "原始 RAG 系统如何构建 Wikipedia 文档索引？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["660f784e6237766f7cd15a8c", "878e605819c077a6ba5282a6"],
+      "relevance_grades": {"660f784e6237766f7cd15a8c": 2, "878e605819c077a6ba5282a6": 1},
+      "notes": "沿用 0.1.0 人工标签：RAG 第 3 页 2.2 节和第 4 页 3 节。"
+    },
+    {
+      "query_id": "rag-fact-004",
+      "question": "RAG 的检索器和生成器在训练过程中如何更新？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["d8f1ad1f899b00de0a38457a", "30d23d74e1bf7053ac1ef8c2"],
+      "relevance_grades": {"d8f1ad1f899b00de0a38457a": 2, "30d23d74e1bf7053ac1ef8c2": 2},
+      "notes": "沿用 0.1.0 人工标签：RAG 第 3-4 页 2.4 节。"
+    },
+    {
+      "query_id": "rag-multi-005",
+      "question": "原始 RAG 论文在哪些知识密集型任务上进行了评估，主要结论是什么？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["01fb3d86735877ad6025f698", "3238601bf3432d323a5fc68d"],
+      "relevance_grades": {"01fb3d86735877ad6025f698": 2, "3238601bf3432d323a5fc68d": 2},
+      "notes": "沿用 0.1.0 人工标签：RAG 第 1 页摘要和第 2 页引言总结。"
+    },
+    {
+      "query_id": "react-term-001",
+      "question": "ReAct 如何交错生成 reasoning traces 和 task-specific actions？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["a6382804d5e0206f3f90940a", "0294c2715f0c36e4b9ced544", "c3695100eef59126cac82e2f"],
+      "relevance_grades": {"a6382804d5e0206f3f90940a": 2, "0294c2715f0c36e4b9ced544": 2, "c3695100eef59126cac82e2f": 1},
+      "notes": "沿用 0.1.0 人工标签：ReAct 第 1 页摘要及第 3-4 页第 2 节。"
+    },
+    {
+      "query_id": "react-fact-002",
+      "question": "推理轨迹和外部行动在 ReAct 中分别发挥什么作用？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["a6382804d5e0206f3f90940a", "adabcb5008bd8da46584a939"],
+      "relevance_grades": {"a6382804d5e0206f3f90940a": 2, "adabcb5008bd8da46584a939": 1},
+      "notes": "沿用 0.1.0 人工标签：ReAct 第 1 页摘要和第 3 页第 2 节。"
+    },
+    {
+      "query_id": "react-multi-003",
+      "question": "ReAct 在 HotpotQA 和 FEVER 上如何与外部知识源交互并减少错误？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["c18c4a2fe4b442baac0a9c74", "dd39926cd8cb7debda4dc785", "5f123ebaa54613e0be9409db", "8af1f31e9ef18e7d6043b8e6"],
+      "relevance_grades": {"c18c4a2fe4b442baac0a9c74": 2, "dd39926cd8cb7debda4dc785": 2, "5f123ebaa54613e0be9409db": 1, "8af1f31e9ef18e7d6043b8e6": 2},
+      "notes": "沿用 0.1.0 人工标签：ReAct 第 1、4、6 页相关段落。"
+    },
+    {
+      "query_id": "react-fact-004",
+      "question": "ReAct 在 ALFWorld 和 WebShop 上报告了怎样的性能提升？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["c18c4a2fe4b442baac0a9c74", "1fcc03b81b754efc58f513a2", "8995221212aefb14f988a29f", "8cf2a3cb7d9c77c8ee996450"],
+      "relevance_grades": {"c18c4a2fe4b442baac0a9c74": 2, "1fcc03b81b754efc58f513a2": 2, "8995221212aefb14f988a29f": 1, "8cf2a3cb7d9c77c8ee996450": 1},
+      "notes": "沿用 0.1.0 人工标签：ReAct 第 1、3、8 页结果。"
+    },
+    {
+      "query_id": "react-fact-005",
+      "question": "ReAct 的实验使用了多少个 in-context examples？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["c3695100eef59126cac82e2f", "8374e017ae44447cba8ff688", "c18c4a2fe4b442baac0a9c74", "1fcc03b81b754efc58f513a2"],
+      "relevance_grades": {"c3695100eef59126cac82e2f": 2, "8374e017ae44447cba8ff688": 2, "c18c4a2fe4b442baac0a9c74": 1, "1fcc03b81b754efc58f513a2": 1},
+      "notes": "沿用 0.1.0 人工标签：论文整体 1-6 个，决策任务为 2 个或 1 个。"
+    },
+    {
+      "query_id": "selfrag-term-001",
+      "question": "Self-RAG 定义了哪几类 reflection tokens，它们各自评估什么？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["57e6a98a3409d38f14af8973"],
+      "relevance_grades": {"57e6a98a3409d38f14af8973": 2},
+      "notes": "人工核对 Self-RAG 第 4 页表 1；完整定义 Retrieve、ISREL、ISSUP、ISUSE 四类 token 及其判断目标。"
+    },
+    {
+      "query_id": "selfrag-fact-002",
+      "question": "Self-RAG 如何决定是否需要检索外部段落？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["4b91777a1b72c998418f21f8", "e54741217ac734ffea8f0cc3", "628f0da6ecdab016bf1b5f49"],
+      "relevance_grades": {"4b91777a1b72c998418f21f8": 1, "e54741217ac734ffea8f0cc3": 2, "628f0da6ecdab016bf1b5f49": 2},
+      "notes": "人工核对 Self-RAG 第 1、4、6 页；模型预测 Retrieve token，可在 Yes 概率超过阈值时触发检索。"
+    },
+    {
+      "query_id": "selfrag-multi-003",
+      "question": "Self-RAG 的 critic model 和 generator model 分别如何训练？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["09c66beeef4a19695fd41453", "533b820ce230b8d58bd5daeb", "7409599072045530e7fb2bb2", "59ad820d9ca71099c8cd07d7"],
+      "relevance_grades": {"09c66beeef4a19695fd41453": 2, "533b820ce230b8d58bd5daeb": 2, "7409599072045530e7fb2bb2": 2, "59ad820d9ca71099c8cd07d7": 2},
+      "notes": "人工核对 Self-RAG 第 4-5 页 3.2 节；GPT-4 标签蒸馏训练 Critic，Critic 离线增强语料后以标准 next-token 目标训练 Generator。"
+    },
+    {
+      "query_id": "selfrag-fact-004",
+      "question": "Self-RAG 在推理阶段如何利用 relevance、support 和 utility 信号选择输出？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["e54741217ac734ffea8f0cc3", "62a22526290cb5d0f688e79a", "4aff79eaf441faf3dc127bf0"],
+      "relevance_grades": {"e54741217ac734ffea8f0cc3": 1, "62a22526290cb5d0f688e79a": 2, "4aff79eaf441faf3dc127bf0": 2},
+      "notes": "人工核对 Self-RAG 第 4、6 页；segment beam search 将生成概率与 ISREL、ISSUP、ISUSE 加权分数结合，也可施加硬约束。"
+    },
+    {
+      "query_id": "selfrag-multi-005",
+      "question": "Self-RAG 使用了哪些任务评估事实性、引用质量和通用能力？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["19d47842eab0b84b9ad12974", "b5e8c549b24a41f1024a4d2d", "fd484dde98cb106db015d821"],
+      "relevance_grades": {"19d47842eab0b84b9ad12974": 2, "b5e8c549b24a41f1024a4d2d": 2, "fd484dde98cb106db015d821": 2},
+      "notes": "人工核对 Self-RAG 第 6-7 页 4.1 节；覆盖 PubHealth、ARC、PopQA、TriviaQA、Biography 和 ASQA，并明确 FactScore 与引用指标。"
+    },
+    {
+      "query_id": "crag-term-001",
+      "question": "CRAG 中的 retrieval evaluator 输出什么信号，这些信号会触发哪些动作？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["d43e600e0adaf9a98aede63b", "5dbd7d962d80e0146d976aad", "5d4bba0ac94eaf292bc80e97"],
+      "relevance_grades": {"d43e600e0adaf9a98aede63b": 2, "5dbd7d962d80e0146d976aad": 2, "5d4bba0ac94eaf292bc80e97": 2},
+      "notes": "人工核对 CRAG 第 2-3 页；相关性置信分数映射为 Correct、Incorrect、Ambiguous，并分别触发精炼、网页纠错或二者结合。"
+    },
+    {
+      "query_id": "crag-fact-002",
+      "question": "CRAG 为什么在静态语料检索之外引入网页搜索？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["1c25dc3d2038d961f73c49de", "4a1f76d4246eb8a9875c715d", "c982f8ac480402a7330e55bc"],
+      "relevance_grades": {"1c25dc3d2038d961f73c49de": 2, "4a1f76d4246eb8a9875c715d": 1, "c982f8ac480402a7330e55bc": 2},
+      "notes": "人工核对 CRAG 第 2、6 页；静态有限语料在范围和多样性上可能只返回次优信息，网页用于补充低质量检索并降低幻觉。"
+    },
+    {
+      "query_id": "crag-term-003",
+      "question": "CRAG 的 decompose-then-recompose 算法如何处理检索文档？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["ea75a6f37fccce9bcf685fd1", "ab2d1c5c81acbed3abd47a3f", "03cd9a6f21c04ad7de7bc97b"],
+      "relevance_grades": {"ea75a6f37fccce9bcf685fd1": 2, "ab2d1c5c81acbed3abd47a3f": 2, "03cd9a6f21c04ad7de7bc97b": 1},
+      "notes": "人工核对 CRAG 第 6 页 4.4 节；文档拆成独立信息 strips，逐段打相关性分数、过滤无关段，再按原顺序拼接。"
+    },
+    {
+      "query_id": "crag-fact-004",
+      "question": "CRAG 如何处理检索结果被判断为错误或模糊的情况？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["e283d9a166c80b9343ea99d9", "5dbd7d962d80e0146d976aad", "5d4bba0ac94eaf292bc80e97"],
+      "relevance_grades": {"e283d9a166c80b9343ea99d9": 2, "5dbd7d962d80e0146d976aad": 2, "5d4bba0ac94eaf292bc80e97": 2},
+      "notes": "人工核对 CRAG 第 3、5 页；Incorrect 丢弃原文档并网页搜索，Ambiguous 合并精炼后的内部知识和网页外部知识。"
+    },
+    {
+      "query_id": "crag-multi-005",
+      "question": "CRAG 在哪些类型的数据集上验证了方法，实验结论是什么？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["07c33f044e40d11f2cadf503", "c5fcc39e184c003e2ec900ff", "598129d0b0a8bf993614af9a"],
+      "relevance_grades": {"07c33f044e40d11f2cadf503": 2, "c5fcc39e184c003e2ec900ff": 2, "598129d0b0a8bf993614af9a": 1},
+      "notes": "人工核对 CRAG 第 2、8 页；PopQA、Biography、PubHealth、ARC-Challenge 覆盖短文本、长文本和闭集任务，结果显示对 RAG/Self-RAG 均有稳定改进。"
+    }
+  ]
+}

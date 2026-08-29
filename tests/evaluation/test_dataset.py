@@ -107,3 +107,19 @@ def test_committed_first_reviewed_dataset_is_valid() -> None:
         "react-fact-004",
         "react-fact-005",
     }
+
+
+def test_committed_twenty_question_dataset_extends_first_subset() -> None:
+    first = load_dataset("data/eval/paperrag_retrieval_10.json")
+    extended = load_dataset("data/eval/paperrag_retrieval_20.json")
+
+    assert extended.name == "paperrag-retrieval-20"
+    assert extended.version == "0.2.0"
+    assert extended.corpus_id == first.corpus_id
+    assert len(extended.queries) == 20
+    assert [query.query_id for query in extended.queries[:10]] == [
+        query.query_id for query in first.queries
+    ]
+    assert [query.relevant_chunk_ids for query in extended.queries[:10]] == [
+        query.relevant_chunk_ids for query in first.queries
+    ]
