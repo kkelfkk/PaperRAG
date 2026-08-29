@@ -49,6 +49,19 @@ BGE-M3 remains a later experimental candidate rather than an unmeasured default.
 Collections reject attempts to mix vectors from different embedding models,
 even when their dimensions happen to match.
 
+## Decision 004: validated DeepSeek grounded generation
+
+The first generator uses DeepSeek's Chat Completions endpoint with
+`deepseek-v4-flash` in non-thinking mode. The API key is read only from the
+ignored local `.env` file. Retrieved passages are labeled `[S1]`, `[S2]`, and so
+on, and document text is explicitly treated as untrusted data.
+
+The model must return a JSON object containing the answer, cited source IDs, and
+an abstention flag. Application code verifies that every cited ID exists, that
+the JSON list exactly matches markers in the answer, and that a non-abstained
+answer cites at least one source. Empty retrieval results abstain before any API
+request is made.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.

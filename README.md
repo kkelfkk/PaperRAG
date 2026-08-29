@@ -3,9 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: dense retrieval baseline. PaperRAG can parse and chunk text-based PDF
-> papers, index them in local Qdrant, and return ranked source passages with
-> page and section metadata. Answer generation is not implemented yet.
+> Status: grounded-answer baseline. PaperRAG can parse and chunk text-based PDF
+> papers, retrieve evidence from local Qdrant, and use DeepSeek to produce an
+> answer with validated page-level citations or an explicit abstention.
 
 ## Why PaperRAG?
 
@@ -51,7 +51,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Parse a text-based PDF and preserve section/page metadata
 - [x] Implement page-aware recursive chunking
 - [x] Build a dense-retrieval baseline with Qdrant
-- [ ] Generate answers with page-level citations
+- [x] Generate DeepSeek answers with validated page-level citations
 - [ ] Add a FastAPI endpoint
 - [ ] Build the first labeled evaluation set
 - [ ] Add BM25 and Reciprocal Rank Fusion
@@ -68,7 +68,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - Qdrant
 - FastEmbed multilingual MiniLM baseline; BGE-M3 planned for comparison
 - BGE reranker
-- OpenAI or Qwen-compatible LLM APIs
+- DeepSeek Chat Completions API
 - pytest and Ruff
 - Streamlit
 
@@ -143,6 +143,25 @@ The command returns ranked JSON results containing similarity scores, chunk
 text, paper title, section, and physical page number. Re-indexing the same
 document replaces its previous chunks instead of creating duplicates. Local
 Qdrant data is written under `storage/` and is ignored by Git.
+
+Create a local secrets file and add a newly generated DeepSeek API key:
+
+```bash
+cp .env.example .env
+```
+
+Never commit `.env` or paste a real key into source code. After indexing at
+least one paper, generate a grounded answer:
+
+```bash
+uv run python -m app.generation.cli \
+  "这篇论文如何利用外部证据？" --top-k 5
+```
+
+The generator sends only the retrieved passages to DeepSeek, requires JSON
+output, validates every `[S1]`-style marker, rejects unknown or missing source
+IDs, and returns the corresponding paper, section, and physical page metadata.
+If retrieval returns no evidence, it abstains without calling the LLM API.
 
 Run the tests with:
 
