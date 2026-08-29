@@ -74,6 +74,20 @@ PDF uploads are streamed in bounded blocks to a temporary file, limited to 50
 MB, validated by the existing parser, and deleted in a `finally` block. Original
 filenames are reduced to their basename before entering citation metadata.
 
+## Decision 006: deterministic retrieval evaluation before optimization
+
+Retrieval experiments use a versioned JSON dataset with a fixed `corpus_id`,
+manually reviewed questions, relevant chunk IDs, and optional graded relevance.
+The evaluator records the collection and embedding model, emits per-query
+rankings, and computes Precision@K, Recall@K, MRR@K, and nDCG@K with macro
+averages. This separates deterministic retrieval measurement from later
+LLM-based generation evaluation.
+
+The repository includes only a labeling template until a real paper corpus has
+been indexed and audited. Placeholder examples must not be reported as project
+results. All retrieval variants will run against the same corpus snapshot,
+chunk IDs, query set, and cutoffs.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.

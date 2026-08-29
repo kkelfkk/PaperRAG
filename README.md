@@ -3,8 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: API-ready grounded-answer baseline. PaperRAG exposes PDF indexing,
-> dense search, and DeepSeek grounded answers through a tested FastAPI service.
+> Status: evaluation-ready grounded-answer baseline. PaperRAG exposes PDF
+> indexing, dense search, and DeepSeek grounded answers through FastAPI, plus a
+> reproducible retrieval evaluation command.
 
 ## Why PaperRAG?
 
@@ -52,10 +53,11 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Build a dense-retrieval baseline with Qdrant
 - [x] Generate DeepSeek answers with validated page-level citations
 - [x] Add FastAPI endpoints for indexing, search, and grounded answers
-- [ ] Build the first labeled evaluation set
+- [x] Add a versioned retrieval evaluation format, runner, and IR metrics
+- [ ] Manually label the first 30-question evaluation set
 - [ ] Add BM25 and Reciprocal Rank Fusion
 - [ ] Add a cross-encoder reranker
-- [ ] Compare retrieval strategies with Recall@K, MRR, and nDCG
+- [ ] Compare retrieval strategies on the labeled set
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
 - [ ] Add a lightweight user interface
 
@@ -80,6 +82,7 @@ project's evaluation set.
 app/
   api/          HTTP API
   chunking/     chunking strategies
+  evaluation/   labeled datasets, retrieval metrics, and evaluation runner
   generation/   prompts, context assembly, and citations
   ingestion/    document parsing and indexing
   reranking/    second-stage ranking
@@ -179,6 +182,28 @@ endpoints are:
 The embedding model and database are loaded lazily, so `/health` does not trigger
 a model download. Uploaded PDFs are processed through a temporary file and
 deleted after indexing.
+
+Copy the retrieval evaluation template and replace every placeholder with
+manually verified chunk IDs from one fixed corpus:
+
+```bash
+cp data/eval/retrieval.template.json data/eval/my_retrieval.json
+uv run python -m app.evaluation.cli \
+  data/eval/my_retrieval.json --validate-only
+```
+
+After the dataset validates, evaluate the current Qdrant index:
+
+```bash
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --cutoffs 1 3 5 10 \
+  --output data/eval/results/dense-baseline.json
+```
+
+The report includes each query's retrieved chunk IDs and Precision@K,
+Recall@K, MRR@K, and nDCG@K, followed by macro averages. The committed template
+contains placeholders, not benchmark results; scores should only be published
+after real papers and labels are fixed.
 
 Run the tests with:
 

@@ -1,0 +1,30 @@
+# Retrieval evaluation data
+
+`retrieval.template.json` documents the versioned format. Copy it to a new file
+before labeling; do not report metrics from the placeholder template.
+
+For each question:
+
+1. Freeze the paper corpus and chunking configuration.
+2. Search broadly and manually inspect the source pages.
+3. Record every relevant `chunk_id`, not only the current top result.
+4. Optionally assign positive integer grades, where larger means more relevant.
+5. Add a short annotation note so another person can audit the label.
+
+Start with 30 reviewed questions across factual, terminology, comparison, and
+multi-evidence categories. Grow to 100-200 only after the annotation process is
+consistent.
+
+Validate a dataset without loading Qdrant or an embedding model:
+
+```bash
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json --validate-only
+```
+
+Run retrieval evaluation:
+
+```bash
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --cutoffs 1 3 5 10 \
+  --output data/eval/results/dense-baseline.json
+```

@@ -1,0 +1,20 @@
+{
+  "name": "paperrag-retrieval-dev",
+  "version": "0.1.0",
+  "description": "Replace every placeholder with manually verified labels from one fixed corpus snapshot.",
+  "corpus_id": "replace-with-corpus-snapshot-id",
+  "queries": [
+    {
+      "query_id": "fact-001",
+      "question": "Replace with a factual question answered by the indexed papers.",
+      "question_type": "factual",
+      "relevant_chunk_ids": [
+        "replace-with-relevant-chunk-id"
+      ],
+      "relevance_grades": {
+        "replace-with-relevant-chunk-id": 2
+      },
+      "notes": "Record why this chunk is relevant. Grades must be positive integers."
+    }
+  ]
+}
