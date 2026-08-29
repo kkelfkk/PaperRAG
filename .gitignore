@@ -29,6 +29,7 @@ data/papers/*
 !data/papers/.gitkeep
 storage/
 models/
+:memory:.ses
 *.db
 *.sqlite
 *.sqlite3
