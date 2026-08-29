@@ -62,6 +62,8 @@ uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
   --output data/eval/results/hybrid-rrf.json
 ```
 
-Use `--strategy dense`, `--strategy bm25`, `--strategy hybrid`, and
-`--strategy hybrid_rerank` with the same dataset to make a controlled
-comparison. The reranking strategy requires the `rerank` optional dependency.
+Use `--strategy dense`, `--strategy bm25`, `--strategy hybrid`,
+`--strategy hybrid_rerank`, and `--strategy decomposed_hybrid_rerank` with the
+same dataset to make a controlled comparison. The reranking strategies require
+the `rerank` optional dependency. Decomposition reads paper IDs and aliases
+from `--corpus-manifest` (default: `configs/eval_corpus.json`).

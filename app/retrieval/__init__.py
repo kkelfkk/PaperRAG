@@ -1,6 +1,12 @@
 """Information retrieval package."""
 
 from app.retrieval.bm25 import BM25_MODEL_NAME, BM25Retriever, tokenize
+from app.retrieval.decomposition import (
+    AliasQueryDecomposer,
+    DecomposedRetriever,
+    DocumentTarget,
+    QueryPlan,
+)
 from app.retrieval.dense import (
     DEFAULT_COLLECTION,
     DenseRetrievalError,
@@ -19,13 +25,17 @@ __all__ = [
     "BM25_MODEL_NAME",
     "DEFAULT_COLLECTION",
     "DEFAULT_EMBEDDING_MODEL",
+    "AliasQueryDecomposer",
     "BM25Retriever",
+    "DecomposedRetriever",
     "DenseRetrievalError",
     "DenseRetriever",
+    "DocumentTarget",
     "EmbeddingProvider",
     "FastEmbedProvider",
     "HybridRetriever",
     "IndexReport",
+    "QueryPlan",
     "SearchFilters",
     "SearchHit",
     "SearchResponse",

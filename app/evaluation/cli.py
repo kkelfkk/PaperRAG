@@ -19,6 +19,11 @@ from app.reranking import (
 )
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.cli import DEFAULT_DB_PATH
+from app.retrieval.decomposition import (
+    AliasQueryDecomposer,
+    DecomposedRetriever,
+    DocumentTarget,
+)
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
 from app.retrieval.hybrid import HybridRetriever
@@ -37,12 +42,41 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
     parser.add_argument(
         "--strategy",
-        choices=("dense", "bm25", "hybrid", "hybrid_rerank"),
+        choices=(
+            "dense",
+            "bm25",
+            "hybrid",
+            "hybrid_rerank",
+            "decomposed_hybrid_rerank",
+        ),
         default="dense",
         help="Retrieval strategy to evaluate",
     )
     parser.add_argument("--reranker-model", default=DEFAULT_RERANKER_MODEL)
+    parser.add_argument(
+        "--corpus-manifest",
+        type=Path,
+        default=Path("configs/eval_corpus.json"),
+        help="Versioned corpus manifest used to resolve paper aliases",
+    )
     return parser
+
+
+def _load_decomposer(path: Path) -> AliasQueryDecomposer:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        papers = payload["papers"]
+        targets = tuple(
+            DocumentTarget(
+                document_id=paper["sha256"][:16],
+                title=paper["title"],
+                aliases=(paper["short_name"], paper["title"]),
+            )
+            for paper in papers
+        )
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise ValueError(f"invalid corpus manifest: {path}") from exc
+    return AliasQueryDecomposer(targets)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -72,14 +106,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                     retriever = dense
                 else:
                     hybrid = HybridRetriever(dense, sparse)
-                    retriever = (
-                        RerankingRetriever(
+                    if args.strategy == "hybrid":
+                        retriever = hybrid
+                    else:
+                        reranked = RerankingRetriever(
                             hybrid,
                             SentenceTransformersCrossEncoder(args.reranker_model),
                         )
-                        if args.strategy == "hybrid_rerank"
-                        else hybrid
-                    )
+                        retriever = (
+                            DecomposedRetriever(
+                                reranked,
+                                _load_decomposer(args.corpus_manifest),
+                            )
+                            if args.strategy == "decomposed_hybrid_rerank"
+                            else reranked
+                        )
             payload = evaluate_retriever(
                 dataset,
                 retriever,

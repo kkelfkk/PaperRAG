@@ -152,3 +152,40 @@ The `1.0.0` labels must remain frozen while testing that hypothesis. Any RRF
 weight, query rewriting, or candidate-diversification tuning should use an
 explicit development split, with the remaining questions held out for the
 final comparison.
+
+## Experiment 004: document-aware query decomposition
+
+Run date: 2026-08-30
+
+This experiment keeps the `1.0.0` dataset, corpus, chunking, models, candidate
+depth, and relevance labels frozen. The only new variable is deterministic
+query decomposition. When a question explicitly names at least two papers, or
+uses a known all-paper marker, the system creates one focused subquery per
+paper, applies that paper's `document_id` filter, runs Hybrid plus reranking,
+and merges the result lists with RRF. Single-paper questions pass through the
+same underlying retriever unchanged.
+
+Paper aliases and document IDs come from `configs/eval_corpus.json`; no LLM or
+answer labels are used to construct the subqueries.
+
+### Results
+
+| Strategy | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
+| --- | ---: | ---: | ---: | ---: |
+| Hybrid + reranker | 25.28% | 31.67% | 30.46% | 22.30% |
+| Decomposition + hybrid + reranker | **26.19%** | **35.92%** | **37.59%** | **26.49%** |
+
+On the 10 cross-paper questions alone, Recall@10 increases from 11.67% to
+24.42%, MRR@10 from 13.37% to 34.76%, and nDCG@10 from 6.27% to 18.83%.
+Document-aware retrieval therefore fixes part of the coverage failure found in
+Experiment 003, while preserving the same Top-10 answer-context budget.
+
+### Limitations and next experiment
+
+Two comparison questions still retrieve no labeled evidence in the Top-10.
+The rule-based decomposer also depends on explicit aliases or collective
+markers, so implicit multi-paper questions can pass through unchanged. Since
+this strategy was developed against the same 30-question benchmark, the gains
+are development-set results. The next retrieval experiment should freeze the
+implementation and evaluate it on newly annotated held-out questions before
+adding learned query rewriting.

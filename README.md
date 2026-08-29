@@ -61,7 +61,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add a cross-encoder reranker
 - [x] Add document, section, and page-range metadata filters
 - [x] Compare four retrieval strategies on the first 10 labeled questions
-- [ ] Add query decomposition for cross-paper comparison questions
+- [x] Add query decomposition for cross-paper comparison questions
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
 - [x] Add a lightweight Streamlit user interface
 
@@ -288,7 +288,7 @@ ignored by Git. A reviewer must inspect the cited PDF pages and fill in every
 `relevant_chunk_ids` list before converting it to the validated evaluation
 format; empty labels are never treated as benchmark data.
 
-After the dataset validates, evaluate all four strategies against exactly the
+After the dataset validates, evaluate all five strategies against exactly the
 same labels and corpus:
 
 ```bash
@@ -304,6 +304,11 @@ uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
   --strategy hybrid_rerank \
   --cutoffs 1 3 5 10 \
   --output data/eval/results/hybrid-rerank.json
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --strategy decomposed_hybrid_rerank \
+  --corpus-manifest configs/eval_corpus.json \
+  --cutoffs 1 3 5 10 \
+  --output data/eval/results/decomposed-hybrid-rerank.json
 ```
 
 The report includes each query's retrieved chunk IDs and Precision@K,
@@ -322,13 +327,15 @@ Self-RAG, CRAG, and cross-paper comparisons. All strategies used the same
 | Dense | 9.31% | 11.53% | 17.89% | 8.65% |
 | BM25 | 7.78% | 21.39% | 17.98% | 15.36% |
 | Hybrid RRF | 12.92% | 17.64% | 15.28% | 11.93% |
-| Hybrid + reranker | **25.28%** | **31.67%** | **30.46%** | **22.30%** |
+| Hybrid + reranker | 25.28% | 31.67% | 30.46% | 22.30% |
+| Decomposition + hybrid + reranker | **26.19%** | **35.92%** | **37.59%** | **26.49%** |
 
-The cross-encoder remains the strongest baseline. The final cross-paper subset
-is substantially harder: Hybrid plus reranking reaches only 11.67% Recall@10
-because one retrieval query must cover evidence distributed across two to four
-papers. This result motivates query decomposition rather than hiding the
-failure behind a larger Top-K.
+The cross-encoder is the strongest conventional baseline. Deterministic query
+decomposition recognizes named papers, issues one document-filtered subquery
+per paper, and merges the balanced rankings with RRF. On the final cross-paper
+subset it raises Recall@10 from 11.67% to 24.42%; the full benchmark rises from
+31.67% to 35.92%. These are development-set results rather than a claim about
+unseen questions.
 See [`docs/evaluation.md`](docs/evaluation.md) for the fixed configuration,
 interpretation, and limitations.
 
