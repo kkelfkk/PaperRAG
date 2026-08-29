@@ -3,9 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: PDF ingestion milestone. PaperRAG can parse text-based PDF papers into
-> structured JSON while preserving page numbers, document metadata, and likely
-> section headings. Retrieval and answer generation are not implemented yet.
+> Status: ingestion and chunking milestone. PaperRAG can parse text-based PDF
+> papers and produce retrieval-ready chunks with stable IDs, page numbers,
+> section metadata, and bounded overlap. Retrieval is not implemented yet.
 
 ## Why PaperRAG?
 
@@ -49,7 +49,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 
 - [x] Define the project scope and repository structure
 - [x] Parse a text-based PDF and preserve section/page metadata
-- [ ] Implement recursive chunking
+- [x] Implement page-aware recursive chunking
 - [ ] Build a dense-retrieval baseline with Qdrant
 - [ ] Generate answers with page-level citations
 - [ ] Add a FastAPI endpoint
@@ -113,6 +113,17 @@ uv run python -m app.ingestion.cli data/papers/example.pdf \
 The JSON output contains a stable document ID, SHA-256 fingerprint, PDF
 metadata, total page count, extracted text for every page, and detected heading
 candidates. Empty pages are retained so source page numbers remain correct.
+
+Parse and split the PDF into retrieval-ready chunks:
+
+```bash
+uv run python -m app.chunking.cli data/papers/example.pdf \
+  --output data/papers/example.chunks.json
+```
+
+The default chunk size is at most 1,200 characters with up to 200 characters of
+overlap. These are explicit baseline parameters, not claimed optimal values;
+they will be compared with other chunking strategies on the evaluation set.
 
 Run the tests with:
 

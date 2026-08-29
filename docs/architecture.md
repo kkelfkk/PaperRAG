@@ -22,6 +22,19 @@ Docling remains a candidate for the later structure-aware ingestion experiment;
 it should replace the parser through the ingestion interface rather than force
 changes in retrieval code.
 
+## Decision 002: page-aware recursive chunking
+
+The baseline chunker splits within a physical PDF page and never combines text
+from different pages. It first groups lines under detected section headings,
+then recursively falls back from paragraphs to lines, words, and finally
+characters. Adjacent chunks within the same section receive bounded overlap.
+
+Every chunk stores a deterministic ID, document ID, source filename, title,
+physical page number, section heading, global chunk index, and size statistics.
+The conservative page boundary may sacrifice some context around page breaks,
+but it makes citations unambiguous. Cross-page strategies can be evaluated later
+instead of silently changing citation semantics.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.
