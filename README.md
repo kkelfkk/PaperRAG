@@ -61,7 +61,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add document, section, and page-range metadata filters
 - [ ] Compare retrieval strategies on the labeled set
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
-- [ ] Add a lightweight user interface
+- [x] Add a lightweight Streamlit user interface
 
 ## Proposed technology stack
 
@@ -105,6 +105,12 @@ dependencies into an isolated environment:
 
 ```bash
 uv sync --extra dev --python 3.12
+```
+
+Install the local web interface dependencies with:
+
+```bash
+uv sync --extra dev --extra ui --python 3.12
 ```
 
 Install the optional local cross-encoder runtime when you are ready to test
@@ -230,6 +236,26 @@ filters.
 The embedding model and database are loaded lazily, so `/health` does not trigger
 a model download. Uploaded PDFs are processed through a temporary file and
 deleted after indexing.
+
+## Streamlit interface
+
+Run the API and interface in two terminals. Terminal 1:
+
+```bash
+uv run uvicorn app.api.main:app --reload
+```
+
+Terminal 2:
+
+```bash
+uv run streamlit run frontend/app.py
+```
+
+Open `http://localhost:8501`. The interface supports PDF upload and indexing,
+all four retrieval strategies, document/section/page filters, evidence-only
+search, grounded answers, and expandable source passages. It communicates only
+with the local FastAPI service; the DeepSeek key remains in the API process's
+ignored `.env` file and is never sent to the browser.
 
 Copy the retrieval evaluation template and replace every placeholder with
 manually verified chunk IDs from one fixed corpus:

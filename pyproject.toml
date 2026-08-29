@@ -30,9 +30,12 @@ dev = [
 rerank = [
   "sentence-transformers>=5.1,<6",
 ]
+ui = [
+  "streamlit>=1.48,<2",
+]
 
 [tool.setuptools.packages.find]
-include = ["app*"]
+include = ["app*", "frontend*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

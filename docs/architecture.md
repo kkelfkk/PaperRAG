@@ -137,6 +137,20 @@ same fields. Evaluation filters are allowed only when the original question is
 genuinely scoped to that document, section, or page range, preventing artificial
 metric inflation.
 
+## Decision 010: a thin Streamlit client over FastAPI
+
+The first user interface is a separate Streamlit process that calls the public
+FastAPI contract instead of importing the retrieval service directly. This
+keeps model ownership, Qdrant locking, upload limits, request validation, and
+secret handling in one backend process. The browser never receives the
+DeepSeek API key.
+
+The interface exposes PDF indexing, all retrieval strategies, shared metadata
+filters, evidence inspection, and grounded answers with citations. Its HTTP
+client converts backend and connection failures into short user-facing errors
+without displaying raw transport diagnostics. Streamlit remains an optional
+dependency so backend-only installation stays lightweight.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.
