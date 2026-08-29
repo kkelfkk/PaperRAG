@@ -1,0 +1,126 @@
+{
+  "name": "paperrag-retrieval-10",
+  "version": "0.1.0",
+  "description": "First manually reviewed PaperRAG retrieval benchmark. Ten Chinese questions are labeled against corpus fingerprint eccd943ec6d334ad77fa2478e785fc71c77338e2ebd78fa1a93324aea7144eda.",
+  "corpus_id": "paperrag-agent-rag-v1",
+  "queries": [
+    {
+      "query_id": "rag-fact-001",
+      "question": "RAG 模型中的参数化记忆和非参数化记忆分别由什么组成？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["98917e49d604e8a6cfab2ceb", "110e608a0cba4adf094d986e"],
+      "relevance_grades": {
+        "98917e49d604e8a6cfab2ceb": 2,
+        "110e608a0cba4adf094d986e": 1
+      },
+      "notes": "人工核对 RAG 第 1 页摘要和第 2 页引言；两段都明确给出 seq2seq 参数化记忆与 Wikipedia 稠密向量索引非参数化记忆。"
+    },
+    {
+      "query_id": "rag-term-002",
+      "question": "RAG-Sequence 和 RAG-Token 在使用检索文档时有什么区别？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["0d3ca9040052f75da2e7e7b1", "2585e6c02a15763152a808d8", "3238601bf3432d323a5fc68d"],
+      "relevance_grades": {
+        "0d3ca9040052f75da2e7e7b1": 2,
+        "2585e6c02a15763152a808d8": 2,
+        "3238601bf3432d323a5fc68d": 1
+      },
+      "notes": "人工核对 RAG 第 1 页摘要及第 3 页 2/2.1 节；Sequence 整个输出共享文档，Token 可按 token 使用不同文档。"
+    },
+    {
+      "query_id": "rag-fact-003",
+      "question": "原始 RAG 系统如何构建 Wikipedia 文档索引？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["660f784e6237766f7cd15a8c", "878e605819c077a6ba5282a6"],
+      "relevance_grades": {
+        "660f784e6237766f7cd15a8c": 2,
+        "878e605819c077a6ba5282a6": 1
+      },
+      "notes": "人工核对 RAG 第 3 页 2.2 节和第 4 页 3 节；核心段落说明 2018-12 Wikipedia、100 词切分、21M 文档、DPR 编码和 FAISS HNSW MIPS 索引。"
+    },
+    {
+      "query_id": "rag-fact-004",
+      "question": "RAG 的检索器和生成器在训练过程中如何更新？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["d8f1ad1f899b00de0a38457a", "30d23d74e1bf7053ac1ef8c2"],
+      "relevance_grades": {
+        "d8f1ad1f899b00de0a38457a": 2,
+        "30d23d74e1bf7053ac1ef8c2": 2
+      },
+      "notes": "人工核对 RAG 第 3-4 页 2.4 节；两个相邻 chunk 合起来说明联合训练、无检索监督、固定文档编码器和索引，仅微调查询编码器与 BART。"
+    },
+    {
+      "query_id": "rag-multi-005",
+      "question": "原始 RAG 论文在哪些知识密集型任务上进行了评估，主要结论是什么？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["01fb3d86735877ad6025f698", "3238601bf3432d323a5fc68d"],
+      "relevance_grades": {
+        "01fb3d86735877ad6025f698": 2,
+        "3238601bf3432d323a5fc68d": 2
+      },
+      "notes": "人工核对 RAG 第 1 页摘要和第 2 页引言总结；两段集中覆盖开放域 QA、MS-MARCO、Jeopardy、FEVER 及主要实验结论。"
+    },
+    {
+      "query_id": "react-term-001",
+      "question": "ReAct 如何交错生成 reasoning traces 和 task-specific actions？",
+      "question_type": "terminology",
+      "relevant_chunk_ids": ["a6382804d5e0206f3f90940a", "0294c2715f0c36e4b9ced544", "c3695100eef59126cac82e2f"],
+      "relevance_grades": {
+        "a6382804d5e0206f3f90940a": 2,
+        "0294c2715f0c36e4b9ced544": 2,
+        "c3695100eef59126cac82e2f": 1
+      },
+      "notes": "人工核对 ReAct 第 1 页摘要及第 3-4 页第 2 节；知识推理任务交替 Thought/Action/Observation，长决策任务只在关键位置稀疏产生 Thought。"
+    },
+    {
+      "query_id": "react-fact-002",
+      "question": "推理轨迹和外部行动在 ReAct 中分别发挥什么作用？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["a6382804d5e0206f3f90940a", "adabcb5008bd8da46584a939"],
+      "relevance_grades": {
+        "a6382804d5e0206f3f90940a": 2,
+        "adabcb5008bd8da46584a939": 1
+      },
+      "notes": "人工核对 ReAct 第 1 页摘要和第 3 页第 2 节；Thought 用于规划、跟踪、更新和处理异常，Action 与外部知识库或环境交互并获取信息。"
+    },
+    {
+      "query_id": "react-multi-003",
+      "question": "ReAct 在 HotpotQA 和 FEVER 上如何与外部知识源交互并减少错误？",
+      "question_type": "multi_evidence",
+      "relevant_chunk_ids": ["c18c4a2fe4b442baac0a9c74", "dd39926cd8cb7debda4dc785", "5f123ebaa54613e0be9409db", "8af1f31e9ef18e7d6043b8e6"],
+      "relevance_grades": {
+        "c18c4a2fe4b442baac0a9c74": 2,
+        "dd39926cd8cb7debda4dc785": 2,
+        "5f123ebaa54613e0be9409db": 1,
+        "8af1f31e9ef18e7d6043b8e6": 2
+      },
+      "notes": "人工核对 ReAct 第 1 页摘要、第 4 页 3/3.1 节和第 6 页 3.3 节；Wikipedia API 支持 search/lookup，推理指导下一次检索，外部事实使幻觉假阳性率由 14% 降至 6%。"
+    },
+    {
+      "query_id": "react-fact-004",
+      "question": "ReAct 在 ALFWorld 和 WebShop 上报告了怎样的性能提升？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["c18c4a2fe4b442baac0a9c74", "1fcc03b81b754efc58f513a2", "8995221212aefb14f988a29f", "8cf2a3cb7d9c77c8ee996450"],
+      "relevance_grades": {
+        "c18c4a2fe4b442baac0a9c74": 2,
+        "1fcc03b81b754efc58f513a2": 2,
+        "8995221212aefb14f988a29f": 1,
+        "8cf2a3cb7d9c77c8ee996450": 1
+      },
+      "notes": "人工核对 ReAct 第 1 页摘要、第 3 页引言和第 8 页结果；相对模仿/强化学习基线，ALFWorld 与 WebShop 的绝对成功率分别提升 34% 和 10%。"
+    },
+    {
+      "query_id": "react-fact-005",
+      "question": "ReAct 的实验使用了多少个 in-context examples？",
+      "question_type": "factual",
+      "relevant_chunk_ids": ["c3695100eef59126cac82e2f", "8374e017ae44447cba8ff688", "c18c4a2fe4b442baac0a9c74", "1fcc03b81b754efc58f513a2"],
+      "relevance_grades": {
+        "c3695100eef59126cac82e2f": 2,
+        "8374e017ae44447cba8ff688": 2,
+        "c18c4a2fe4b442baac0a9c74": 1,
+        "1fcc03b81b754efc58f513a2": 1
+      },
+      "notes": "人工核对 ReAct 第 1、3、4 页；论文整体使用 1-6 个 in-context examples，决策任务 ALFWorld/WebShop 具体只使用 2 个或 1 个。"
+    }
+  ]
+}

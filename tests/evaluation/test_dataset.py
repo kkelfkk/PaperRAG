@@ -85,3 +85,25 @@ def test_validate_only_cli_does_not_need_retrieval_runtime(
     output = json.loads(capsys.readouterr().out)
     assert output["valid"] is True
     assert output["query_count"] == 1
+
+
+def test_committed_first_reviewed_dataset_is_valid() -> None:
+    dataset = load_dataset("data/eval/paperrag_retrieval_10.json")
+
+    assert dataset.name == "paperrag-retrieval-10"
+    assert dataset.version == "0.1.0"
+    assert dataset.corpus_id == "paperrag-agent-rag-v1"
+    assert len(dataset.queries) == 10
+    assert all(query.relevant_chunk_ids for query in dataset.queries)
+    assert {query.query_id for query in dataset.queries} == {
+        "rag-fact-001",
+        "rag-term-002",
+        "rag-fact-003",
+        "rag-fact-004",
+        "rag-multi-005",
+        "react-term-001",
+        "react-fact-002",
+        "react-multi-003",
+        "react-fact-004",
+        "react-fact-005",
+    }

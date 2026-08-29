@@ -34,6 +34,11 @@ The generated `data/eval/work/retrieval_candidates.json` deliberately contains
 empty labels. Inspect source pages, add all relevant chunk IDs, record uncertain
 decisions, and have a second pass review comparison and multi-evidence items.
 
+`paperrag_retrieval_10.json` is the first manually reviewed subset. Its labels
+cover the five RAG and five ReAct questions and are tied to the corpus
+fingerprint recorded in the dataset description. Treat this as a development
+set while the remaining questions receive a second manual review.
+
 Validate a dataset without loading Qdrant or an embedding model:
 
 ```bash
