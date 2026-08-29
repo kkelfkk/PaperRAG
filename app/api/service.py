@@ -21,6 +21,12 @@ from app.generation.llm import (
 )
 from app.generation.models import GroundedAnswer
 from app.ingestion.pdf_parser import parse_pdf
+from app.reranking.cross_encoder import (
+    DEFAULT_RERANKER_MODEL,
+    CrossEncoderProvider,
+    SentenceTransformersCrossEncoder,
+)
+from app.reranking.retriever import RerankingRetriever
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
@@ -35,6 +41,7 @@ class PaperRAGService:
         self,
         retriever: DenseRetriever,
         answer_generator: GroundedAnswerGenerator | None = None,
+        reranker: CrossEncoderProvider | None = None,
     ) -> None:
         self.retriever = retriever
         self.sparse_retriever = BM25Retriever(
@@ -44,6 +51,10 @@ class PaperRAGService:
         self.hybrid_retriever = HybridRetriever(
             retriever,
             self.sparse_retriever,
+        )
+        self.reranking_retriever = RerankingRetriever(
+            self.hybrid_retriever,
+            reranker or SentenceTransformersCrossEncoder(),
         )
         self.answer_generator = answer_generator
         self._lock = threading.RLock()
@@ -119,13 +130,15 @@ class PaperRAGService:
     def _searcher(
         self,
         strategy: str,
-    ) -> DenseRetriever | BM25Retriever | HybridRetriever:
+    ) -> DenseRetriever | BM25Retriever | HybridRetriever | RerankingRetriever:
         if strategy == "dense":
             return self.retriever
         if strategy == "bm25":
             return self.sparse_retriever
         if strategy == "hybrid":
             return self.hybrid_retriever
+        if strategy == "hybrid_rerank":
+            return self.reranking_retriever
         raise ValueError(f"unknown retrieval strategy: {strategy}")
 
     def close(self) -> None:
@@ -159,4 +172,8 @@ def create_default_service() -> PaperRAGService:
             base_url=os.getenv("DEEPSEEK_BASE_URL", DEFAULT_DEEPSEEK_BASE_URL),
         )
         answer_generator = GroundedAnswerGenerator(llm)
-    return PaperRAGService(retriever, answer_generator)
+    reranker = SentenceTransformersCrossEncoder(
+        model_name=os.getenv("RERANKER_MODEL", DEFAULT_RERANKER_MODEL),
+        device=os.getenv("RERANKER_DEVICE") or None,
+    )
+    return PaperRAGService(retriever, answer_generator, reranker)

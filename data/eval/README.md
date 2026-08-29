@@ -30,5 +30,6 @@ uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
   --output data/eval/results/hybrid-rrf.json
 ```
 
-Use `--strategy dense`, `--strategy bm25`, and `--strategy hybrid` with the same
-dataset to make a controlled comparison.
+Use `--strategy dense`, `--strategy bm25`, `--strategy hybrid`, and
+`--strategy hybrid_rerank` with the same dataset to make a controlled
+comparison. The reranking strategy requires the `rerank` optional dependency.

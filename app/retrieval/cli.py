@@ -13,6 +13,11 @@ from qdrant_client import QdrantClient
 from app.chunking.models import ChunkingConfig
 from app.chunking.recursive import chunk_document
 from app.ingestion.pdf_parser import PDFParseError, parse_pdf
+from app.reranking import (
+    DEFAULT_RERANKER_MODEL,
+    RerankingRetriever,
+    SentenceTransformersCrossEncoder,
+)
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
@@ -46,9 +51,10 @@ def build_parser() -> argparse.ArgumentParser:
     search_parser.add_argument("--document-id")
     search_parser.add_argument(
         "--strategy",
-        choices=("dense", "bm25", "hybrid"),
+        choices=("dense", "bm25", "hybrid", "hybrid_rerank"),
         default="hybrid",
     )
+    search_parser.add_argument("--reranker-model", default=DEFAULT_RERANKER_MODEL)
     return parser
 
 
@@ -90,11 +96,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     embedder=FastEmbedProvider(args.model),
                     collection_name=args.collection,
                 )
-                searcher = (
-                    dense
-                    if args.strategy == "dense"
-                    else HybridRetriever(dense, sparse)
-                )
+                if args.strategy == "dense":
+                    searcher = dense
+                else:
+                    hybrid = HybridRetriever(dense, sparse)
+                    searcher = (
+                        RerankingRetriever(
+                            hybrid,
+                            SentenceTransformersCrossEncoder(args.reranker_model),
+                        )
+                        if args.strategy == "hybrid_rerank"
+                        else hybrid
+                    )
             result = searcher.search(
                 args.query,
                 top_k=args.top_k,

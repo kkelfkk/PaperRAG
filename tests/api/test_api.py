@@ -195,6 +195,20 @@ def test_request_validation_rejects_unknown_strategy(
     assert response.status_code == 422
 
 
+def test_api_accepts_hybrid_rerank_strategy(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, service = api_client
+
+    response = client.post(
+        "/v1/search",
+        json={"query": "question", "strategy": "hybrid_rerank"},
+    )
+
+    assert response.status_code == 200
+    assert service.search_options["strategy"] == "hybrid_rerank"
+
+
 def test_ask_without_deepseek_configuration_returns_503(
     api_client: tuple[TestClient, FakeService],
 ) -> None:

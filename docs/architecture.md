@@ -109,6 +109,21 @@ for every query. That is inspectable and adequate for a small paper collection;
 a persisted sparse index should replace it if profiling shows corpus scans are
 the bottleneck.
 
+## Decision 008: optional multilingual cross-encoder reranking
+
+The `hybrid_rerank` strategy asks Hybrid Search for at least 20 candidates, then
+scores every query-passage pair jointly and sorts by the new relevance score.
+Candidate text includes title and section metadata as well as the chunk body.
+The default model is `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`, selected as a
+smaller multilingual baseline; larger BGE rerankers remain experiment
+candidates rather than unmeasured defaults.
+
+The sentence-transformers adapter loads both its dependency and model lazily.
+PyTorch is isolated in the optional `rerank` dependency group, and ordinary
+Dense, BM25, and Hybrid use does not require it. The API therefore keeps
+`hybrid` as its lightweight default and makes reranking an explicit strategy.
+Tests inject a deterministic scoring provider and never download a model.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.

@@ -12,6 +12,11 @@ from qdrant_client import QdrantClient
 
 from app.evaluation.dataset import load_dataset
 from app.evaluation.runner import evaluate_retriever
+from app.reranking import (
+    DEFAULT_RERANKER_MODEL,
+    RerankingRetriever,
+    SentenceTransformersCrossEncoder,
+)
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.cli import DEFAULT_DB_PATH
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
@@ -32,10 +37,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
     parser.add_argument(
         "--strategy",
-        choices=("dense", "bm25", "hybrid"),
+        choices=("dense", "bm25", "hybrid", "hybrid_rerank"),
         default="dense",
         help="Retrieval strategy to evaluate",
     )
+    parser.add_argument("--reranker-model", default=DEFAULT_RERANKER_MODEL)
     return parser
 
 
@@ -62,11 +68,18 @@ def main(argv: Sequence[str] | None = None) -> int:
                     embedder=FastEmbedProvider(args.embedding_model),
                     collection_name=args.collection,
                 )
-                retriever = (
-                    dense
-                    if args.strategy == "dense"
-                    else HybridRetriever(dense, sparse)
-                )
+                if args.strategy == "dense":
+                    retriever = dense
+                else:
+                    hybrid = HybridRetriever(dense, sparse)
+                    retriever = (
+                        RerankingRetriever(
+                            hybrid,
+                            SentenceTransformersCrossEncoder(args.reranker_model),
+                        )
+                        if args.strategy == "hybrid_rerank"
+                        else hybrid
+                    )
             payload = evaluate_retriever(
                 dataset,
                 retriever,

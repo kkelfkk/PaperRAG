@@ -3,9 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: evaluation-ready hybrid RAG baseline. PaperRAG combines dense and
-> BM25 retrieval with Reciprocal Rank Fusion, exposes grounded DeepSeek answers
-> through FastAPI, and includes a reproducible retrieval evaluation command.
+> Status: evaluation-ready advanced RAG baseline. PaperRAG combines dense and
+> BM25 retrieval with Reciprocal Rank Fusion, optionally applies multilingual
+> cross-encoder reranking, and returns grounded DeepSeek answers with citations.
 
 ## Why PaperRAG?
 
@@ -56,7 +56,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add a versioned retrieval evaluation format, runner, and IR metrics
 - [ ] Manually label the first 30-question evaluation set
 - [x] Add BM25 and Reciprocal Rank Fusion
-- [ ] Add a cross-encoder reranker
+- [x] Add a cross-encoder reranker
 - [ ] Compare retrieval strategies on the labeled set
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
 - [ ] Add a lightweight user interface
@@ -68,7 +68,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - Docling
 - Qdrant
 - FastEmbed multilingual MiniLM baseline; BGE-M3 planned for comparison
-- BGE reranker
+- Multilingual MiniLM cross-encoder baseline; BGE reranker planned for comparison
 - DeepSeek Chat Completions API
 - pytest and Ruff
 - Streamlit
@@ -103,6 +103,14 @@ dependencies into an isolated environment:
 
 ```bash
 uv sync --extra dev --python 3.12
+```
+
+Install the optional local cross-encoder runtime when you are ready to test
+reranking (it also installs PyTorch, so it is intentionally not a base
+dependency):
+
+```bash
+uv sync --extra dev --extra rerank --python 3.12
 ```
 
 Place a text-based paper PDF in `data/papers/` and parse it:
@@ -150,7 +158,14 @@ each strategy separately:
 uv run python -m app.retrieval.cli search "cross-encoder" --strategy dense
 uv run python -m app.retrieval.cli search "cross-encoder" --strategy bm25
 uv run python -m app.retrieval.cli search "cross-encoder" --strategy hybrid
+uv run python -m app.retrieval.cli search \
+  "cross-encoder" --strategy hybrid_rerank
 ```
+
+`hybrid_rerank` retrieves at least 20 Hybrid candidates, scores every
+query-passage pair jointly with the multilingual cross-encoder, and returns the
+new Top-K. The first run downloads the configured reranker model. Override it
+with `--reranker-model` or `RERANKER_MODEL` in `.env`.
 
 The command returns ranked JSON results containing scores, chunk text, paper
 title, section, and physical page number. Re-indexing the same document replaces
@@ -191,7 +206,7 @@ endpoints are:
 - `POST /v1/ask` - generate a validated DeepSeek answer with citations.
 
 The `/v1/search` and `/v1/ask` JSON bodies accept `strategy` as `dense`, `bm25`,
-or `hybrid`; the default is `hybrid`.
+`hybrid`, or `hybrid_rerank`; the lightweight default remains `hybrid`.
 
 The embedding model and database are loaded lazily, so `/health` does not trigger
 a model download. Uploaded PDFs are processed through a temporary file and
@@ -218,6 +233,10 @@ uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
   --strategy hybrid \
   --cutoffs 1 3 5 10 \
   --output data/eval/results/hybrid-rrf.json
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --strategy hybrid_rerank \
+  --cutoffs 1 3 5 10 \
+  --output data/eval/results/hybrid-rerank.json
 ```
 
 The report includes each query's retrieved chunk IDs and Precision@K,

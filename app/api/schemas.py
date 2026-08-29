@@ -25,7 +25,7 @@ class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
     top_k: int = Field(default=5, ge=1, le=50)
     document_id: str | None = Field(default=None, max_length=128)
-    strategy: Literal["dense", "bm25", "hybrid"] = "hybrid"
+    strategy: Literal["dense", "bm25", "hybrid", "hybrid_rerank"] = "hybrid"
 
 
 class SearchHitResponse(BaseModel):
