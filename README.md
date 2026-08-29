@@ -3,9 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: project initialization. The first milestone is a dense-retrieval
-> baseline that can answer questions about local PDF papers with page-level
-> citations.
+> Status: PDF ingestion milestone. PaperRAG can parse text-based PDF papers into
+> structured JSON while preserving page numbers, document metadata, and likely
+> section headings. Retrieval and answer generation are not implemented yet.
 
 ## Why PaperRAG?
 
@@ -48,7 +48,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 ## Roadmap
 
 - [x] Define the project scope and repository structure
-- [ ] Parse one PDF and preserve section/page metadata
+- [x] Parse a text-based PDF and preserve section/page metadata
 - [ ] Implement recursive chunking
 - [ ] Build a dense-retrieval baseline with Qdrant
 - [ ] Generate answers with page-level citations
@@ -96,9 +96,33 @@ tests/          automated tests
 
 ## Local development
 
-The project is not runnable yet. Setup instructions will be added with the first
-vertical slice: parse one PDF, index it, retrieve a passage, and return its
-source metadata.
+Python 3.11 or 3.12 is recommended. Install the locked project and development
+dependencies into an isolated environment:
+
+```bash
+uv sync --extra dev --python 3.12
+```
+
+Place a text-based paper PDF in `data/papers/` and parse it:
+
+```bash
+uv run python -m app.ingestion.cli data/papers/example.pdf \
+  --output data/papers/example.parsed.json
+```
+
+The JSON output contains a stable document ID, SHA-256 fingerprint, PDF
+metadata, total page count, extracted text for every page, and detected heading
+candidates. Empty pages are retained so source page numbers remain correct.
+
+Run the tests with:
+
+```bash
+uv run pytest
+```
+
+The current parser targets text-based PDFs. Scanned documents require OCR, and
+complex tables or multi-column layouts will need a layout-aware parser in a
+later milestone.
 
 ## Evaluation plan
 
