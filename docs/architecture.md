@@ -35,6 +35,20 @@ The conservative page boundary may sacrifice some context around page breaks,
 but it makes citations unambiguous. Cross-page strategies can be evaluated later
 instead of silently changing citation semantics.
 
+## Decision 003: embedded Qdrant dense baseline
+
+The first retriever uses Qdrant local mode with cosine similarity, allowing the
+same Qdrant data model to run without Docker during early development. Each
+point stores the chunk vector plus citation payload. Re-indexing a document
+deletes its previous points first, preventing stale chunks after PDF updates.
+
+Embedding generation is behind a small provider interface. The runnable
+baseline uses FastEmbed's multilingual MiniLM ONNX model for modest local
+resource usage; tests use deterministic vectors and require no model download.
+BGE-M3 remains a later experimental candidate rather than an unmeasured default.
+Collections reject attempts to mix vectors from different embedding models,
+even when their dimensions happen to match.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.

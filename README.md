@@ -3,9 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: ingestion and chunking milestone. PaperRAG can parse text-based PDF
-> papers and produce retrieval-ready chunks with stable IDs, page numbers,
-> section metadata, and bounded overlap. Retrieval is not implemented yet.
+> Status: dense retrieval baseline. PaperRAG can parse and chunk text-based PDF
+> papers, index them in local Qdrant, and return ranked source passages with
+> page and section metadata. Answer generation is not implemented yet.
 
 ## Why PaperRAG?
 
@@ -50,7 +50,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Define the project scope and repository structure
 - [x] Parse a text-based PDF and preserve section/page metadata
 - [x] Implement page-aware recursive chunking
-- [ ] Build a dense-retrieval baseline with Qdrant
+- [x] Build a dense-retrieval baseline with Qdrant
 - [ ] Generate answers with page-level citations
 - [ ] Add a FastAPI endpoint
 - [ ] Build the first labeled evaluation set
@@ -66,7 +66,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - FastAPI and Pydantic
 - Docling
 - Qdrant
-- BGE-M3 embeddings
+- FastEmbed multilingual MiniLM baseline; BGE-M3 planned for comparison
 - BGE reranker
 - OpenAI or Qwen-compatible LLM APIs
 - pytest and Ruff
@@ -124,6 +124,25 @@ uv run python -m app.chunking.cli data/papers/example.pdf \
 The default chunk size is at most 1,200 characters with up to 200 characters of
 overlap. These are explicit baseline parameters, not claimed optimal values;
 they will be compared with other chunking strategies on the evaluation set.
+
+Index one paper in an embedded local Qdrant database:
+
+```bash
+uv run python -m app.retrieval.cli index data/papers/example.pdf
+```
+
+The first indexing run downloads the default multilingual embedding model
+(about 220 MB). Search the indexed chunks:
+
+```bash
+uv run python -m app.retrieval.cli search \
+  "What problem does the paper solve?" --top-k 5
+```
+
+The command returns ranked JSON results containing similarity scores, chunk
+text, paper title, section, and physical page number. Re-indexing the same
+document replaces its previous chunks instead of creating duplicates. Local
+Qdrant data is written under `storage/` and is ignored by Git.
 
 Run the tests with:
 
