@@ -10,7 +10,7 @@ import pytest
 from pydantic import ValidationError
 
 from app.evaluation.cli import main
-from app.evaluation.dataset import EvaluationDataset, load_dataset
+from app.evaluation.dataset import EvaluationDataset, QuestionType, load_dataset
 
 
 def _payload() -> dict[str, Any]:
@@ -123,3 +123,23 @@ def test_committed_twenty_question_dataset_extends_first_subset() -> None:
     assert [query.relevant_chunk_ids for query in extended.queries[:10]] == [
         query.relevant_chunk_ids for query in first.queries
     ]
+
+
+def test_committed_final_dataset_extends_twenty_question_subset() -> None:
+    previous = load_dataset("data/eval/paperrag_retrieval_20.json")
+    final = load_dataset("data/eval/paperrag_retrieval_30.json")
+
+    assert final.name == "paperrag-retrieval-30"
+    assert final.version == "1.0.0"
+    assert final.corpus_id == previous.corpus_id
+    assert len(final.queries) == 30
+    assert [query.query_id for query in final.queries[:20]] == [
+        query.query_id for query in previous.queries
+    ]
+    assert [query.relevant_chunk_ids for query in final.queries[:20]] == [
+        query.relevant_chunk_ids for query in previous.queries
+    ]
+    assert all(
+        query.question_type in {QuestionType.COMPARISON, QuestionType.MULTI_EVIDENCE}
+        for query in final.queries[20:]
+    )

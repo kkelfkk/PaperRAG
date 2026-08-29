@@ -43,6 +43,10 @@ set while the remaining questions receive a second manual review.
 Self-RAG and five CRAG questions. Keeping both versions makes the 10-question
 and 20-question experiment reports independently reproducible.
 
+`paperrag_retrieval_30.json` is the completed `1.0.0` benchmark. It preserves
+the first 20 labels and adds 10 cross-paper comparison and multi-evidence
+questions, each backed by evidence from every method named in the question.
+
 Validate a dataset without loading Qdrant or an embedding model:
 
 ```bash

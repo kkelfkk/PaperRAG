@@ -103,3 +103,52 @@ Manually review the final 10 cross-paper comparison questions. These require
 evidence from two to four papers and should receive a second annotation pass.
 Only after the 30-question set is complete should fusion weights or query
 rewriting be tuned, otherwise the benchmark would leak into system design.
+
+## Experiment 003: completed cross-paper benchmark
+
+Run date: 2026-08-29
+
+The final baseline adds 10 comparison and multi-evidence questions. Each label
+set was checked to include evidence from every paper named in its question;
+the automated coverage audit found no missing target papers. The resulting
+`data/eval/paperrag_retrieval_30.json` dataset is version `1.0.0`, contains 30
+questions, and references 62 unique relevant chunks.
+
+The corpus, chunking, models, fusion configuration, and cutoffs remain unchanged
+from Experiments 001 and 002.
+
+### Results
+
+| Strategy | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
+| --- | ---: | ---: | ---: | ---: |
+| Dense | 9.31% | 11.53% | 17.89% | 8.65% |
+| BM25 | 7.78% | 21.39% | 17.98% | 15.36% |
+| Hybrid RRF | 12.92% | 17.64% | 15.28% | 11.93% |
+| Hybrid + reranker | **25.28%** | **31.67%** | **30.46%** | **22.30%** |
+
+### Cross-paper subset analysis
+
+On the final 10 questions alone, Hybrid plus reranking reaches 7.50% Recall@5
+and 11.67% Recall@10. Dense, BM25, and plain Hybrid reach 5.42%, 5.00%, and
+8.75% Recall@10 respectively. Five of the 10 cross-paper questions retrieve no
+relevant chunk in the reranked Top-10.
+
+This is an important negative result. A single ranking list is poorly matched
+to questions that require balanced evidence from two to four documents. A
+high-scoring passage from one paper can occupy the candidate budget while
+other required papers remain absent. Increasing Top-K alone would raise cost
+without guaranteeing balanced document coverage.
+
+### Conclusion and next hypothesis
+
+Hybrid plus reranking is the strongest of the four implemented baselines on
+all reported metrics, but reranking cannot recover evidence that never enters
+its candidate set. The next hypothesis is that decomposing a comparison into
+paper- or aspect-specific subqueries, retrieving for each subquery, and then
+merging candidates with document-aware diversification will improve
+multi-evidence Recall@10.
+
+The `1.0.0` labels must remain frozen while testing that hypothesis. Any RRF
+weight, query rewriting, or candidate-diversification tuning should use an
+explicit development split, with the remaining questions held out for the
+final comparison.

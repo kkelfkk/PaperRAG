@@ -56,11 +56,12 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add FastAPI endpoints for indexing, search, and grounded answers
 - [x] Add a versioned retrieval evaluation format, runner, and IR metrics
 - [x] Build a pinned four-paper corpus and 30-question annotation worksheet
-- [ ] Manually verify relevant chunks for the 30-question evaluation set (20/30 complete)
+- [x] Manually verify relevant chunks for the 30-question evaluation set
 - [x] Add BM25 and Reciprocal Rank Fusion
 - [x] Add a cross-encoder reranker
 - [x] Add document, section, and page-range metadata filters
 - [x] Compare four retrieval strategies on the first 10 labeled questions
+- [ ] Add query decomposition for cross-paper comparison questions
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
 - [x] Add a lightweight Streamlit user interface
 
@@ -312,21 +313,22 @@ after real papers and labels are fixed.
 
 ### Current retrieval benchmark
 
-The current manually reviewed development set contains 20 questions across
-RAG, ReAct, Self-RAG, and CRAG. All strategies used the same 538-chunk corpus,
-labels, and Top-10 cutoff. Results remain diagnostic until all 30 questions are
-reviewed:
+The completed `1.0.0` baseline contains 30 questions across RAG, ReAct,
+Self-RAG, CRAG, and cross-paper comparisons. All strategies used the same
+538-chunk corpus, labels, and Top-10 cutoff:
 
 | Strategy | Recall@5 | Recall@10 | MRR@10 | nDCG@10 |
 | --- | ---: | ---: | ---: | ---: |
-| Dense | 11.25% | 14.58% | 16.83% | 8.70% |
-| BM25 | 10.42% | 29.58% | 24.47% | 21.92% |
-| Hybrid RRF | 16.25% | 22.08% | 18.25% | 14.90% |
-| Hybrid + reranker | **34.17%** | **41.67%** | **39.00%** | **30.31%** |
+| Dense | 9.31% | 11.53% | 17.89% | 8.65% |
+| BM25 | 7.78% | 21.39% | 17.98% | 15.36% |
+| Hybrid RRF | 12.92% | 17.64% | 15.28% | 11.93% |
+| Hybrid + reranker | **25.28%** | **31.67%** | **30.46%** | **22.30%** |
 
-The cross-encoder continues to recover substantially more relevant passages,
-while BM25 still beats the current dense baseline at Recall@10 on
-Chinese-query/English-document retrieval.
+The cross-encoder remains the strongest baseline. The final cross-paper subset
+is substantially harder: Hybrid plus reranking reaches only 11.67% Recall@10
+because one retrieval query must cover evidence distributed across two to four
+papers. This result motivates query decomposition rather than hiding the
+failure behind a larger Top-K.
 See [`docs/evaluation.md`](docs/evaluation.md) for the fixed configuration,
 interpretation, and limitations.
 
