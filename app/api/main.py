@@ -134,6 +134,7 @@ def create_app() -> FastAPI:
                 request.query,
                 top_k=request.top_k,
                 document_id=request.document_id,
+                strategy=request.strategy,
             )
             return SearchResponse.model_validate(result.to_dict())
         except (DenseRetrievalError, OSError, ValueError) as exc:
@@ -149,6 +150,7 @@ def create_app() -> FastAPI:
                 request.query,
                 top_k=request.top_k,
                 document_id=request.document_id,
+                strategy=request.strategy,
             )
             return AnswerResponse.model_validate(result.to_dict())
         except (DenseRetrievalError, LLMError, OSError, ValueError) as exc:

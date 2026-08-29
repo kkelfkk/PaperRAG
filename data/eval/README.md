@@ -25,6 +25,10 @@ Run retrieval evaluation:
 
 ```bash
 uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --strategy hybrid \
   --cutoffs 1 3 5 10 \
-  --output data/eval/results/dense-baseline.json
+  --output data/eval/results/hybrid-rrf.json
 ```
+
+Use `--strategy dense`, `--strategy bm25`, and `--strategy hybrid` with the same
+dataset to make a controlled comparison.

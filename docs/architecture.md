@@ -64,7 +64,8 @@ request is made.
 
 ## Decision 005: lazy FastAPI application service
 
-FastAPI exposes health, PDF indexing, dense search, and grounded-answer routes.
+FastAPI exposes health, PDF indexing, selectable retrieval, and grounded-answer
+routes.
 The heavyweight embedding model and local Qdrant client are initialized only
 when a pipeline endpoint is first called, then shared across requests and closed
 during application lifespan shutdown. Local-mode operations are serialized to
@@ -87,6 +88,26 @@ The repository includes only a labeling template until a real paper corpus has
 been indexed and audited. Placeholder examples must not be reported as project
 results. All retrieval variants will run against the same corpus snapshot,
 chunk IDs, query set, and cutoffs.
+
+## Decision 007: BM25 plus Reciprocal Rank Fusion baseline
+
+The lexical retriever computes Okapi BM25 directly from the chunk payloads in
+Qdrant, so the baseline requires no second database or hidden preprocessing.
+Latin technical terms are case-folded while contiguous Chinese text is split
+into character bigrams. Titles receive a small, explicit boost by appearing
+twice in the searchable text.
+
+Hybrid retrieval requests a broader candidate list from both dense and BM25
+retrievers, then combines ranks with Reciprocal Rank Fusion using equal weights
+and `k=60`. RRF is used because cosine similarity and BM25 scores are not on a
+shared scale. Search, answer generation, and evaluation expose `dense`, `bm25`,
+and `hybrid` strategies; hybrid is the product default, while evaluation keeps
+dense explicit as the original baseline.
+
+This first BM25 implementation rebuilds corpus statistics from Qdrant payloads
+for every query. That is inspectable and adequate for a small paper collection;
+a persisted sparse index should replace it if profiling shows corpus scans are
+the bottleneck.
 
 ## Planned retrieval experiments
 

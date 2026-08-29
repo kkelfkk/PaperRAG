@@ -21,6 +21,8 @@ class FakeService:
         self.upload_header = b""
         self.source_name = ""
         self.ask_error: Exception | None = None
+        self.search_options: dict[str, object] = {}
+        self.ask_options: dict[str, object] = {}
 
     def index_pdf(
         self, pdf_path: Path, *, source_name: str, **kwargs: object
@@ -39,7 +41,7 @@ class FakeService:
         )
 
     def search(self, query: str, **kwargs: object) -> SearchResponse:
-        del kwargs
+        self.search_options = kwargs
         return SearchResponse(
             query=query,
             collection_name="paperrag_dense",
@@ -61,7 +63,7 @@ class FakeService:
         )
 
     def ask(self, query: str, **kwargs: object) -> GroundedAnswer:
-        del kwargs
+        self.ask_options = kwargs
         if self.ask_error is not None:
             raise self.ask_error
         return GroundedAnswer(
@@ -154,25 +156,43 @@ def test_upload_enforces_size_limit(
 def test_search_returns_ranked_source_metadata(
     api_client: tuple[TestClient, FakeService],
 ) -> None:
-    client, _ = api_client
+    client, service = api_client
 
-    response = client.post("/v1/search", json={"query": "evidence", "top_k": 3})
+    response = client.post(
+        "/v1/search",
+        json={"query": "evidence", "top_k": 3, "strategy": "bm25"},
+    )
 
     assert response.status_code == 200
     assert response.json()["hits"][0]["page_number"] == 4
     assert response.json()["hits"][0]["score"] == 0.91
+    assert service.search_options["strategy"] == "bm25"
 
 
 def test_ask_returns_answer_and_citations(
     api_client: tuple[TestClient, FakeService],
 ) -> None:
-    client, _ = api_client
+    client, service = api_client
 
     response = client.post("/v1/ask", json={"query": "question"})
 
     assert response.status_code == 200
     assert response.json()["answer"] == "Grounded answer. [S1]"
     assert response.json()["citations"][0]["page_number"] == 4
+    assert service.ask_options["strategy"] == "hybrid"
+
+
+def test_request_validation_rejects_unknown_strategy(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, _ = api_client
+
+    response = client.post(
+        "/v1/search",
+        json={"query": "question", "strategy": "unknown"},
+    )
+
+    assert response.status_code == 422
 
 
 def test_ask_without_deepseek_configuration_returns_503(

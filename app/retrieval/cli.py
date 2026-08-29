@@ -1,4 +1,4 @@
-"""Command-line interface for local Qdrant indexing and dense search."""
+"""Command-line interface for local indexing and retrieval strategies."""
 
 from __future__ import annotations
 
@@ -13,8 +13,10 @@ from qdrant_client import QdrantClient
 from app.chunking.models import ChunkingConfig
 from app.chunking.recursive import chunk_document
 from app.ingestion.pdf_parser import PDFParseError, parse_pdf
+from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
+from app.retrieval.hybrid import HybridRetriever
 
 DEFAULT_DB_PATH = Path("storage/qdrant")
 
@@ -42,6 +44,11 @@ def build_parser() -> argparse.ArgumentParser:
     search_parser.add_argument("query")
     search_parser.add_argument("--top-k", type=int, default=5)
     search_parser.add_argument("--document-id")
+    search_parser.add_argument(
+        "--strategy",
+        choices=("dense", "bm25", "hybrid"),
+        default="hybrid",
+    )
     return parser
 
 
@@ -63,18 +70,32 @@ def main(argv: Sequence[str] | None = None) -> int:
                 overlap_chars=args.overlap_chars,
             )
             chunks = chunk_document(parse_pdf(args.pdf), config).chunks
-        retriever = DenseRetriever(
-            client=client,
-            embedder=FastEmbedProvider(args.model),
-            collection_name=args.collection,
-        )
         if args.command == "index":
+            retriever = DenseRetriever(
+                client=client,
+                embedder=FastEmbedProvider(args.model),
+                collection_name=args.collection,
+            )
             result = retriever.index_document(
                 chunks or (),
                 recreate=args.recreate,
             )
         else:
-            result = retriever.search(
+            sparse = BM25Retriever(client, args.collection)
+            if args.strategy == "bm25":
+                searcher = sparse
+            else:
+                dense = DenseRetriever(
+                    client=client,
+                    embedder=FastEmbedProvider(args.model),
+                    collection_name=args.collection,
+                )
+                searcher = (
+                    dense
+                    if args.strategy == "dense"
+                    else HybridRetriever(dense, sparse)
+                )
+            result = searcher.search(
                 args.query,
                 top_k=args.top_k,
                 document_id=args.document_id,

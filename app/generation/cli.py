@@ -18,9 +18,11 @@ from app.generation.llm import (
     DeepSeekClient,
     LLMError,
 )
+from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.cli import DEFAULT_DB_PATH
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
+from app.retrieval.hybrid import HybridRetriever
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -33,6 +35,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--db-path", type=Path, default=DEFAULT_DB_PATH)
     parser.add_argument("--collection", default=DEFAULT_COLLECTION)
     parser.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
+    parser.add_argument(
+        "--strategy",
+        choices=("dense", "bm25", "hybrid"),
+        default="hybrid",
+    )
     parser.add_argument("--llm-model", default=DEFAULT_DEEPSEEK_MODEL)
     parser.add_argument("--deepseek-base-url", default=DEFAULT_DEEPSEEK_BASE_URL)
     return parser
@@ -45,11 +52,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     llm: DeepSeekClient | None = None
     try:
         qdrant = QdrantClient(path=str(args.db_path))
-        retriever = DenseRetriever(
-            client=qdrant,
-            embedder=FastEmbedProvider(args.embedding_model),
-            collection_name=args.collection,
-        )
+        sparse = BM25Retriever(qdrant, args.collection)
+        if args.strategy == "bm25":
+            retriever = sparse
+        else:
+            dense = DenseRetriever(
+                client=qdrant,
+                embedder=FastEmbedProvider(args.embedding_model),
+                collection_name=args.collection,
+            )
+            retriever = (
+                dense if args.strategy == "dense" else HybridRetriever(dense, sparse)
+            )
         search = retriever.search(
             args.query,
             top_k=args.top_k,

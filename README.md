@@ -3,9 +3,9 @@
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
 reranking, and verifiable citations.
 
-> Status: evaluation-ready grounded-answer baseline. PaperRAG exposes PDF
-> indexing, dense search, and DeepSeek grounded answers through FastAPI, plus a
-> reproducible retrieval evaluation command.
+> Status: evaluation-ready hybrid RAG baseline. PaperRAG combines dense and
+> BM25 retrieval with Reciprocal Rank Fusion, exposes grounded DeepSeek answers
+> through FastAPI, and includes a reproducible retrieval evaluation command.
 
 ## Why PaperRAG?
 
@@ -34,7 +34,7 @@ crawling, a knowledge graph, or multi-agent workflows.
 PDF papers
     |
     v
-Document parsing -> Structure-aware chunking -> Dense + BM25 indexes
+Document parsing -> Structure-aware chunking -> Qdrant chunk/vector index
                                                     |
 User question -> Query processing -> Hybrid retrieval -> Reranking
                                                     |
@@ -55,7 +55,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add FastAPI endpoints for indexing, search, and grounded answers
 - [x] Add a versioned retrieval evaluation format, runner, and IR metrics
 - [ ] Manually label the first 30-question evaluation set
-- [ ] Add BM25 and Reciprocal Rank Fusion
+- [x] Add BM25 and Reciprocal Rank Fusion
 - [ ] Add a cross-encoder reranker
 - [ ] Compare retrieval strategies on the labeled set
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
@@ -141,10 +141,21 @@ uv run python -m app.retrieval.cli search \
   "What problem does the paper solve?" --top-k 5
 ```
 
-The command returns ranked JSON results containing similarity scores, chunk
-text, paper title, section, and physical page number. Re-indexing the same
-document replaces its previous chunks instead of creating duplicates. Local
-Qdrant data is written under `storage/` and is ignored by Git.
+Search defaults to hybrid retrieval. Dense retrieval handles semantic matches,
+BM25 handles exact technical terms, and Reciprocal Rank Fusion merges their
+candidate rankings without comparing incompatible raw scores. You can inspect
+each strategy separately:
+
+```bash
+uv run python -m app.retrieval.cli search "cross-encoder" --strategy dense
+uv run python -m app.retrieval.cli search "cross-encoder" --strategy bm25
+uv run python -m app.retrieval.cli search "cross-encoder" --strategy hybrid
+```
+
+The command returns ranked JSON results containing scores, chunk text, paper
+title, section, and physical page number. Re-indexing the same document replaces
+its previous chunks instead of creating duplicates. Local Qdrant data is written
+under `storage/` and is ignored by Git.
 
 Create a local secrets file and add a newly generated DeepSeek API key:
 
@@ -179,6 +190,9 @@ endpoints are:
 - `POST /v1/search` - return ranked evidence with source metadata;
 - `POST /v1/ask` - generate a validated DeepSeek answer with citations.
 
+The `/v1/search` and `/v1/ask` JSON bodies accept `strategy` as `dense`, `bm25`,
+or `hybrid`; the default is `hybrid`.
+
 The embedding model and database are loaded lazily, so `/health` does not trigger
 a model download. Uploaded PDFs are processed through a temporary file and
 deleted after indexing.
@@ -192,12 +206,18 @@ uv run python -m app.evaluation.cli \
   data/eval/my_retrieval.json --validate-only
 ```
 
-After the dataset validates, evaluate the current Qdrant index:
+After the dataset validates, evaluate all three strategies against exactly the
+same labels and corpus:
 
 ```bash
 uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --strategy dense --output data/eval/results/dense-baseline.json
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --strategy bm25 --output data/eval/results/bm25-baseline.json
+uv run python -m app.evaluation.cli data/eval/my_retrieval.json \
+  --strategy hybrid \
   --cutoffs 1 3 5 10 \
-  --output data/eval/results/dense-baseline.json
+  --output data/eval/results/hybrid-rrf.json
 ```
 
 The report includes each query's retrieved chunk IDs and Precision@K,

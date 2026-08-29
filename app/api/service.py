@@ -21,8 +21,10 @@ from app.generation.llm import (
 )
 from app.generation.models import GroundedAnswer
 from app.ingestion.pdf_parser import parse_pdf
+from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
+from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.models import IndexReport, SearchResponse
 
 
@@ -35,6 +37,14 @@ class PaperRAGService:
         answer_generator: GroundedAnswerGenerator | None = None,
     ) -> None:
         self.retriever = retriever
+        self.sparse_retriever = BM25Retriever(
+            retriever.client,
+            retriever.collection_name,
+        )
+        self.hybrid_retriever = HybridRetriever(
+            retriever,
+            self.sparse_retriever,
+        )
         self.answer_generator = answer_generator
         self._lock = threading.RLock()
 
@@ -75,9 +85,11 @@ class PaperRAGService:
         *,
         top_k: int = 5,
         document_id: str | None = None,
+        strategy: str = "hybrid",
     ) -> SearchResponse:
         with self._lock:
-            return self.retriever.search(
+            searcher = self._searcher(strategy)
+            return searcher.search(
                 query,
                 top_k=top_k,
                 document_id=document_id,
@@ -89,6 +101,7 @@ class PaperRAGService:
         *,
         top_k: int = 5,
         document_id: str | None = None,
+        strategy: str = "hybrid",
     ) -> GroundedAnswer:
         if self.answer_generator is None:
             raise LLMError(
@@ -96,12 +109,24 @@ class PaperRAGService:
                 "DEEPSEEK_API_KEY to the local .env file and restart the API."
             )
         with self._lock:
-            search = self.retriever.search(
+            search = self._searcher(strategy).search(
                 query,
                 top_k=top_k,
                 document_id=document_id,
             )
             return self.answer_generator.generate(query, search.hits)
+
+    def _searcher(
+        self,
+        strategy: str,
+    ) -> DenseRetriever | BM25Retriever | HybridRetriever:
+        if strategy == "dense":
+            return self.retriever
+        if strategy == "bm25":
+            return self.sparse_retriever
+        if strategy == "hybrid":
+            return self.hybrid_retriever
+        raise ValueError(f"unknown retrieval strategy: {strategy}")
 
     def close(self) -> None:
         llm = getattr(self.answer_generator, "llm", None)
