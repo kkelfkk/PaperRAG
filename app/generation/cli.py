@@ -27,6 +27,7 @@ from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.cli import DEFAULT_DB_PATH
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
+from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever
 
 
@@ -37,6 +38,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("query")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--document-id")
+    parser.add_argument("--section")
+    parser.add_argument("--page-from", type=int)
+    parser.add_argument("--page-to", type=int)
     parser.add_argument("--db-path", type=Path, default=DEFAULT_DB_PATH)
     parser.add_argument("--collection", default=DEFAULT_COLLECTION)
     parser.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
@@ -82,7 +86,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         search = retriever.search(
             args.query,
             top_k=args.top_k,
-            document_id=args.document_id,
+            filters=SearchFilters(
+                document_id=args.document_id,
+                section=args.section,
+                page_from=args.page_from,
+                page_to=args.page_to,
+            ),
         )
         llm = DeepSeekClient.from_env(
             model_name=args.llm_model,

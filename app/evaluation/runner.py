@@ -8,6 +8,7 @@ from typing import Any, Protocol
 
 from app.evaluation.dataset import EvaluationDataset
 from app.evaluation.metrics import evaluate_ranking
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchResponse
 
 
@@ -17,7 +18,7 @@ class Searcher(Protocol):
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse: ...
 
 
@@ -75,7 +76,12 @@ def evaluate_retriever(
         response = searcher.search(
             query.question,
             top_k=max_k,
-            document_id=query.document_id,
+            filters=SearchFilters(
+                document_id=query.document_id,
+                section=query.section,
+                page_from=query.page_from,
+                page_to=query.page_to,
+            ),
         )
         if not collection_name:
             collection_name = response.collection_name

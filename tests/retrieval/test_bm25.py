@@ -10,6 +10,7 @@ from qdrant_client import QdrantClient
 from app.chunking.models import DocumentChunk
 from app.retrieval.bm25 import BM25_MODEL_NAME, BM25Retriever, tokenize
 from app.retrieval.dense import DenseRetriever
+from app.retrieval.filters import SearchFilters
 
 
 class ConstantEmbedder:
@@ -28,15 +29,17 @@ def _chunk(
     *,
     document_id: str = "doc-1",
     chunk_index: int = 0,
+    page_number: int | None = None,
+    section: str = "Methods",
 ) -> DocumentChunk:
     return DocumentChunk(
         chunk_id=chunk_id,
         document_id=document_id,
         source_file=f"{document_id}.pdf",
         title="Retrieval Paper",
-        page_number=chunk_index + 1,
+        page_number=page_number or chunk_index + 1,
         chunk_index=chunk_index,
-        section="Methods",
+        section=section,
         text=text,
         char_count=len(text),
         word_count=len(text.split()),
@@ -82,8 +85,29 @@ def test_bm25_document_filter_and_no_match(client: QdrantClient) -> None:
     dense.index_document([_chunk("second", "rarekeyword", document_id="doc-2")])
     retriever = BM25Retriever(client, dense.collection_name)
 
-    filtered = retriever.search("rarekeyword", document_id="doc-2")
+    filtered = retriever.search(
+        "rarekeyword",
+        filters=SearchFilters(document_id="doc-2"),
+    )
     missing = retriever.search("not-present-anywhere")
 
     assert [hit.chunk_id for hit in filtered.hits] == ["second"]
     assert missing.hits == ()
+
+
+def test_bm25_applies_section_and_page_range_together(client: QdrantClient) -> None:
+    dense = DenseRetriever(client, ConstantEmbedder())
+    dense.index_document(
+        [
+            _chunk("intro", "rarekeyword", page_number=2, section="Introduction"),
+            _chunk("method", "rarekeyword", chunk_index=1, page_number=5),
+            _chunk("late", "rarekeyword", chunk_index=2, page_number=12),
+        ]
+    )
+
+    response = BM25Retriever(client, dense.collection_name).search(
+        "rarekeyword",
+        filters=SearchFilters(section="Methods", page_from=3, page_to=8),
+    )
+
+    assert [hit.chunk_id for hit in response.hits] == ["method"]

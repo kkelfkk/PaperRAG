@@ -66,6 +66,14 @@ def test_invalid_dataset_version_is_rejected() -> None:
         EvaluationDataset.model_validate(payload)
 
 
+def test_invalid_query_page_range_is_rejected() -> None:
+    payload = _payload()
+    payload["queries"][0].update({"page_from": 8, "page_to": 2})
+
+    with pytest.raises(ValidationError, match="page_from"):
+        EvaluationDataset.model_validate(payload)
+
+
 def test_validate_only_cli_does_not_need_retrieval_runtime(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],

@@ -6,6 +6,7 @@ from typing import ClassVar
 
 from app.evaluation.dataset import EvaluationDataset
 from app.evaluation.runner import evaluate_retriever
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchHit, SearchResponse
 
 
@@ -15,14 +16,17 @@ class FakeSearcher:
         "second question": ("x", "b"),
     }
 
+    def __init__(self) -> None:
+        self.filters: list[SearchFilters | None] = []
+
     def search(
         self,
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
-        del document_id
+        self.filters.append(filters)
         hits = tuple(
             SearchHit(
                 rank=rank,
@@ -59,6 +63,9 @@ def _dataset() -> EvaluationDataset:
                     "question": "first question",
                     "question_type": "factual",
                     "relevant_chunk_ids": ["a"],
+                    "section": "Methods",
+                    "page_from": 3,
+                    "page_to": 8,
                 },
                 {
                     "query_id": "q2",
@@ -72,7 +79,8 @@ def _dataset() -> EvaluationDataset:
 
 
 def test_runner_returns_per_query_and_macro_average_metrics() -> None:
-    report = evaluate_retriever(_dataset(), FakeSearcher(), cutoffs=[1, 2])
+    searcher = FakeSearcher()
+    report = evaluate_retriever(_dataset(), searcher, cutoffs=[1, 2])
 
     assert report.query_count == 2
     assert report.collection_name == "test-collection"
@@ -81,3 +89,8 @@ def test_runner_returns_per_query_and_macro_average_metrics() -> None:
     assert report.summary["mrr@2"] == 0.75
     assert report.queries[1].retrieved_chunk_ids == ("x", "b")
     assert report.to_dict()["dataset_version"] == "1.0.0"
+    assert searcher.filters[0] == SearchFilters(
+        section="Methods",
+        page_from=3,
+        page_to=8,
+    )

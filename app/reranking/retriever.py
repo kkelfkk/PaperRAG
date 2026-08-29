@@ -6,6 +6,7 @@ from dataclasses import replace
 from typing import Protocol
 
 from app.reranking.cross_encoder import CrossEncoderProvider, RerankingError
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchHit, SearchResponse
 
 
@@ -15,7 +16,7 @@ class Searcher(Protocol):
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse: ...
 
 
@@ -52,7 +53,7 @@ class RerankingRetriever:
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
         if top_k <= 0:
             raise RerankingError("top_k must be positive")
@@ -60,7 +61,7 @@ class RerankingRetriever:
         response = self.candidate_retriever.search(
             query,
             top_k=candidate_k,
-            document_id=document_id,
+            filters=filters,
         )
         if not response.hits:
             return SearchResponse(

@@ -30,6 +30,7 @@ from app.reranking.retriever import RerankingRetriever
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
+from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.models import IndexReport, SearchResponse
 
@@ -95,7 +96,7 @@ class PaperRAGService:
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
         strategy: str = "hybrid",
     ) -> SearchResponse:
         with self._lock:
@@ -103,7 +104,7 @@ class PaperRAGService:
             return searcher.search(
                 query,
                 top_k=top_k,
-                document_id=document_id,
+                filters=filters,
             )
 
     def ask(
@@ -111,7 +112,7 @@ class PaperRAGService:
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
         strategy: str = "hybrid",
     ) -> GroundedAnswer:
         if self.answer_generator is None:
@@ -123,7 +124,7 @@ class PaperRAGService:
             search = self._searcher(strategy).search(
                 query,
                 top_k=top_k,
-                document_id=document_id,
+                filters=filters,
             )
             return self.answer_generator.generate(query, search.hits)
 

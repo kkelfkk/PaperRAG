@@ -11,6 +11,7 @@ from app.retrieval.embeddings import (
     EmbeddingProvider,
     FastEmbedProvider,
 )
+from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever, reciprocal_rank_fusion
 from app.retrieval.models import IndexReport, SearchHit, SearchResponse
 
@@ -25,6 +26,7 @@ __all__ = [
     "FastEmbedProvider",
     "HybridRetriever",
     "IndexReport",
+    "SearchFilters",
     "SearchHit",
     "SearchResponse",
     "reciprocal_rank_fusion",

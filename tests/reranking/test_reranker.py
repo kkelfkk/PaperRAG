@@ -12,6 +12,7 @@ from app.reranking.cross_encoder import (
     SentenceTransformersCrossEncoder,
 )
 from app.reranking.retriever import RerankingRetriever
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchHit, SearchResponse
 
 
@@ -33,16 +34,16 @@ def _hit(chunk_id: str, rank: int, text: str) -> SearchHit:
 class FakeCandidateRetriever:
     def __init__(self, hits: Sequence[SearchHit]) -> None:
         self.hits = tuple(hits)
-        self.calls: list[tuple[int, str | None]] = []
+        self.calls: list[tuple[int, SearchFilters | None]] = []
 
     def search(
         self,
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
-        self.calls.append((top_k, document_id))
+        self.calls.append((top_k, filters))
         return SearchResponse(
             query=query,
             collection_name="papers",
@@ -74,9 +75,10 @@ def test_reranking_reorders_candidates_and_replaces_scores() -> None:
     scorer = FakeReranker([0.1, 0.95, 0.3])
     retriever = RerankingRetriever(candidates, scorer)
 
-    response = retriever.search("relevant evidence", top_k=2, document_id="doc-1")
+    filters = SearchFilters(document_id="doc-1", page_from=2)
+    response = retriever.search("relevant evidence", top_k=2, filters=filters)
 
-    assert candidates.calls == [(20, "doc-1")]
+    assert candidates.calls == [(20, filters)]
     assert [hit.chunk_id for hit in response.hits] == ["second", "third"]
     assert [hit.rank for hit in response.hits] == [1, 2]
     assert [hit.score for hit in response.hits] == [0.95, 0.3]

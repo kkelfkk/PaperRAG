@@ -9,6 +9,7 @@ from qdrant_client import QdrantClient
 
 from app.chunking.models import DocumentChunk
 from app.retrieval.dense import DenseRetrievalError, DenseRetriever
+from app.retrieval.filters import SearchFilters
 
 
 class KeywordEmbedder:
@@ -43,6 +44,7 @@ def _chunk(
     document_id: str = "doc-1",
     page_number: int = 1,
     chunk_index: int = 0,
+    section: str = "Introduction",
 ) -> DocumentChunk:
     return DocumentChunk(
         chunk_id=chunk_id,
@@ -51,7 +53,7 @@ def _chunk(
         title=f"Paper {document_id}",
         page_number=page_number,
         chunk_index=chunk_index,
-        section="Introduction",
+        section=section,
         text=text,
         char_count=len(text),
         word_count=len(text.split()),
@@ -113,9 +115,46 @@ def test_document_filter_limits_results(client: QdrantClient) -> None:
     retriever.index_document([_chunk("doc-1-chunk", "retrieval", document_id="doc-1")])
     retriever.index_document([_chunk("doc-2-chunk", "retrieval", document_id="doc-2")])
 
-    response = retriever.search("retrieval", top_k=10, document_id="doc-2")
+    response = retriever.search(
+        "retrieval",
+        top_k=10,
+        filters=SearchFilters(document_id="doc-2"),
+    )
 
     assert [hit.document_id for hit in response.hits] == ["doc-2"]
+
+
+def test_section_and_page_range_filter_limits_dense_results(
+    client: QdrantClient,
+) -> None:
+    retriever = DenseRetriever(client, KeywordEmbedder())
+    retriever.index_document(
+        [
+            _chunk("intro", "retrieval evidence", page_number=2),
+            _chunk(
+                "method-early",
+                "retrieval evidence",
+                page_number=4,
+                chunk_index=1,
+                section="Methods",
+            ),
+            _chunk(
+                "method-late",
+                "retrieval evidence",
+                page_number=9,
+                chunk_index=2,
+                section="Methods",
+            ),
+        ]
+    )
+
+    response = retriever.search(
+        "retrieval",
+        top_k=10,
+        filters=SearchFilters(section="Methods", page_from=3, page_to=6),
+    )
+
+    assert [hit.chunk_id for hit in response.hits] == ["method-early"]
 
 
 def test_recreate_replaces_whole_collection(client: QdrantClient) -> None:

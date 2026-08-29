@@ -10,6 +10,7 @@ from qdrant_client import QdrantClient, models
 
 from app.chunking.models import DocumentChunk
 from app.retrieval.embeddings import EmbeddingProvider
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import IndexReport, SearchHit, SearchResponse
 
 DEFAULT_COLLECTION = "paperrag_dense"
@@ -185,9 +186,9 @@ class DenseRetriever:
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
-        """Return the top dense results, optionally filtered to one document."""
+        """Return dense results constrained by optional metadata filters."""
 
         if not query.strip():
             raise DenseRetrievalError("query cannot be empty")
@@ -199,16 +200,7 @@ class DenseRetriever:
             )
         self._validate_embedding_model()
 
-        query_filter = None
-        if document_id:
-            query_filter = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="document_id",
-                        match=models.MatchValue(value=document_id),
-                    )
-                ]
-            )
+        query_filter = filters.to_qdrant() if filters is not None else None
 
         response = self.client.query_points(
             collection_name=self.collection_name,

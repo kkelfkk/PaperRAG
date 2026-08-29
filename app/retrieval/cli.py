@@ -21,6 +21,7 @@ from app.reranking import (
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
+from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever
 
 DEFAULT_DB_PATH = Path("storage/qdrant")
@@ -49,6 +50,9 @@ def build_parser() -> argparse.ArgumentParser:
     search_parser.add_argument("query")
     search_parser.add_argument("--top-k", type=int, default=5)
     search_parser.add_argument("--document-id")
+    search_parser.add_argument("--section")
+    search_parser.add_argument("--page-from", type=int)
+    search_parser.add_argument("--page-to", type=int)
     search_parser.add_argument(
         "--strategy",
         choices=("dense", "bm25", "hybrid", "hybrid_rerank"),
@@ -111,7 +115,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = searcher.search(
                 args.query,
                 top_k=args.top_k,
-                document_id=args.document_id,
+                filters=SearchFilters(
+                    document_id=args.document_id,
+                    section=args.section,
+                    page_from=args.page_from,
+                    page_to=args.page_to,
+                ),
             )
     except (PDFParseError, DenseRetrievalError, ValueError) as exc:
         print(f"error: {exc}", file=sys.stderr)

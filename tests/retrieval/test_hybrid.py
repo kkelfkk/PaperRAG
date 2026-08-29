@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever, reciprocal_rank_fusion
 from app.retrieval.models import SearchHit, SearchResponse
 
@@ -25,16 +26,16 @@ class FakeSearcher:
     def __init__(self, model: str, chunk_ids: tuple[str, ...]) -> None:
         self.model = model
         self.chunk_ids = chunk_ids
-        self.calls: list[tuple[int, str | None]] = []
+        self.calls: list[tuple[int, SearchFilters | None]] = []
 
     def search(
         self,
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
-        self.calls.append((top_k, document_id))
+        self.calls.append((top_k, filters))
         return SearchResponse(
             query=query,
             collection_name="papers",
@@ -70,9 +71,10 @@ def test_hybrid_fetches_broad_candidates_and_preserves_filter() -> None:
     sparse = FakeSearcher("bm25-v1", ("shared", "b"))
     retriever = HybridRetriever(dense, sparse, candidate_multiplier=3)
 
-    response = retriever.search("question", top_k=2, document_id="doc-1")
+    filters = SearchFilters(document_id="doc-1", section="Methods")
+    response = retriever.search("question", top_k=2, filters=filters)
 
-    assert dense.calls == [(6, "doc-1")]
-    assert sparse.calls == [(6, "doc-1")]
+    assert dense.calls == [(6, filters)]
+    assert sparse.calls == [(6, filters)]
     assert response.embedding_model == "hybrid:dense-model+bm25-v1"
     assert [hit.chunk_id for hit in response.hits] == ["shared", "a"]

@@ -7,6 +7,7 @@ from dataclasses import replace
 from typing import Protocol
 
 from app.retrieval.dense import DenseRetrievalError
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchHit, SearchResponse
 
 
@@ -16,7 +17,7 @@ class Searcher(Protocol):
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse: ...
 
 
@@ -97,7 +98,7 @@ class HybridRetriever:
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
         if top_k <= 0:
             raise DenseRetrievalError("top_k must be positive")
@@ -105,12 +106,12 @@ class HybridRetriever:
         dense_response = self.dense.search(
             query,
             top_k=candidate_k,
-            document_id=document_id,
+            filters=filters,
         )
         sparse_response = self.sparse.search(
             query,
             top_k=candidate_k,
-            document_id=document_id,
+            filters=filters,
         )
         if dense_response.collection_name != sparse_response.collection_name:
             raise DenseRetrievalError("dense and sparse collection names must match")

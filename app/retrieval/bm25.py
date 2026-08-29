@@ -8,9 +8,10 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Any
 
-from qdrant_client import QdrantClient, models
+from qdrant_client import QdrantClient
 
 from app.retrieval.dense import DenseRetrievalError
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchHit, SearchResponse
 
 BM25_MODEL_NAME = "bm25-v1"
@@ -70,17 +71,8 @@ class BM25Retriever:
         self.b = b
         self.scroll_batch_size = scroll_batch_size
 
-    def _load_documents(self, document_id: str | None) -> list[_BM25Document]:
-        query_filter = None
-        if document_id:
-            query_filter = models.Filter(
-                must=[
-                    models.FieldCondition(
-                        key="document_id",
-                        match=models.MatchValue(value=document_id),
-                    )
-                ]
-            )
+    def _load_documents(self, filters: SearchFilters | None) -> list[_BM25Document]:
+        query_filter = filters.to_qdrant() if filters is not None else None
 
         documents: list[_BM25Document] = []
         offset: Any = None
@@ -118,7 +110,7 @@ class BM25Retriever:
         query: str,
         *,
         top_k: int = 5,
-        document_id: str | None = None,
+        filters: SearchFilters | None = None,
     ) -> SearchResponse:
         if not query.strip():
             raise DenseRetrievalError("query cannot be empty")
@@ -132,7 +124,7 @@ class BM25Retriever:
         if not query_terms:
             raise DenseRetrievalError("query does not contain searchable terms")
 
-        documents = self._load_documents(document_id)
+        documents = self._load_documents(filters)
         if not documents:
             return SearchResponse(
                 query=query,

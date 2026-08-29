@@ -5,7 +5,8 @@ reranking, and verifiable citations.
 
 > Status: evaluation-ready advanced RAG baseline. PaperRAG combines dense and
 > BM25 retrieval with Reciprocal Rank Fusion, optionally applies multilingual
-> cross-encoder reranking, and returns grounded DeepSeek answers with citations.
+> cross-encoder reranking, supports metadata-constrained search, and returns
+> grounded DeepSeek answers with citations.
 
 ## Why PaperRAG?
 
@@ -57,6 +58,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [ ] Manually label the first 30-question evaluation set
 - [x] Add BM25 and Reciprocal Rank Fusion
 - [x] Add a cross-encoder reranker
+- [x] Add document, section, and page-range metadata filters
 - [ ] Compare retrieval strategies on the labeled set
 - [ ] Evaluate faithfulness, answer relevance, and citation quality
 - [ ] Add a lightweight user interface
@@ -167,6 +169,21 @@ query-passage pair jointly with the multilingual cross-encoder, and returns the
 new Top-K. The first run downloads the configured reranker model. Override it
 with `--reranker-model` or `RERANKER_MODEL` in `.env`.
 
+Restrict any retrieval strategy to one paper, an exact section, and/or a
+physical page range:
+
+```bash
+uv run python -m app.retrieval.cli search \
+  "How is the model trained?" \
+  --strategy hybrid \
+  --document-id YOUR_DOCUMENT_ID \
+  --section "Methods" \
+  --page-from 4 --page-to 10
+```
+
+Filters are applied inside Qdrant before Dense or BM25 candidates are ranked.
+They can be combined, and invalid page ranges are rejected.
+
 The command returns ranked JSON results containing scores, chunk text, paper
 title, section, and physical page number. Re-indexing the same document replaces
 its previous chunks instead of creating duplicates. Local Qdrant data is written
@@ -207,6 +224,8 @@ endpoints are:
 
 The `/v1/search` and `/v1/ask` JSON bodies accept `strategy` as `dense`, `bm25`,
 `hybrid`, or `hybrid_rerank`; the lightweight default remains `hybrid`.
+They also accept optional `document_id`, `section`, `page_from`, and `page_to`
+filters.
 
 The embedding model and database are loaded lazily, so `/health` does not trigger
 a model download. Uploaded PDFs are processed through a temporary file and

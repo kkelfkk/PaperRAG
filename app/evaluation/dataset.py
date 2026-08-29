@@ -25,6 +25,9 @@ class EvaluationQuery(BaseModel):
     relevant_chunk_ids: list[str] = Field(min_length=1)
     relevance_grades: dict[str, int] = Field(default_factory=dict)
     document_id: str | None = Field(default=None, max_length=128)
+    section: str | None = Field(default=None, min_length=1, max_length=500)
+    page_from: int | None = Field(default=None, ge=1)
+    page_to: int | None = Field(default=None, ge=1)
     notes: str | None = Field(default=None, max_length=2000)
 
     @model_validator(mode="after")
@@ -38,6 +41,12 @@ class EvaluationQuery(BaseModel):
             )
         if any(grade <= 0 for grade in self.relevance_grades.values()):
             raise ValueError("relevance grades must be positive integers")
+        if (
+            self.page_from is not None
+            and self.page_to is not None
+            and self.page_from > self.page_to
+        ):
+            raise ValueError("page_from cannot be greater than page_to")
         return self
 
     def grades(self) -> dict[str, int]:

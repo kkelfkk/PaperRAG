@@ -124,6 +124,19 @@ Dense, BM25, and Hybrid use does not require it. The API therefore keeps
 `hybrid` as its lightweight default and makes reranking an explicit strategy.
 Tests inject a deterministic scoring provider and never download a model.
 
+## Decision 009: one metadata filter contract for all retrieval stages
+
+`SearchFilters` validates optional document ID, exact section, and inclusive
+physical page bounds, then builds one Qdrant filter shared by Dense and BM25.
+Hybrid Search and the reranker forward the same immutable object to their
+candidate retrievers. Filtering therefore happens before ranking and fusion,
+instead of silently removing items from an already limited Top-K.
+
+The HTTP API, search CLI, answer CLI, and labeled evaluation format expose the
+same fields. Evaluation filters are allowed only when the original question is
+genuinely scoped to that document, section, or page range, preventing artificial
+metric inflation.
+
 ## Planned retrieval experiments
 
 1. Dense retrieval baseline.

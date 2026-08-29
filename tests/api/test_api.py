@@ -11,6 +11,7 @@ import app.api.main as api_main
 from app.api.main import create_app, get_service
 from app.generation.llm import LLMError
 from app.generation.models import Citation, GroundedAnswer
+from app.retrieval.filters import SearchFilters
 from app.retrieval.models import IndexReport, SearchHit, SearchResponse
 
 
@@ -207,6 +208,44 @@ def test_api_accepts_hybrid_rerank_strategy(
 
     assert response.status_code == 200
     assert service.search_options["strategy"] == "hybrid_rerank"
+
+
+def test_api_forwards_metadata_filters(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, service = api_client
+
+    response = client.post(
+        "/v1/search",
+        json={
+            "query": "method",
+            "document_id": "doc-1",
+            "section": "Methods",
+            "page_from": 4,
+            "page_to": 9,
+        },
+    )
+
+    assert response.status_code == 200
+    assert service.search_options["filters"] == SearchFilters(
+        document_id="doc-1",
+        section="Methods",
+        page_from=4,
+        page_to=9,
+    )
+
+
+def test_api_rejects_reversed_page_range(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, _ = api_client
+
+    response = client.post(
+        "/v1/search",
+        json={"query": "question", "page_from": 10, "page_to": 2},
+    )
+
+    assert response.status_code == 422
 
 
 def test_ask_without_deepseek_configuration_returns_503(

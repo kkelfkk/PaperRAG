@@ -133,7 +133,7 @@ def create_app() -> FastAPI:
             result = service.search(
                 request.query,
                 top_k=request.top_k,
-                document_id=request.document_id,
+                filters=request.to_search_filters(),
                 strategy=request.strategy,
             )
             return SearchResponse.model_validate(result.to_dict())
@@ -149,7 +149,7 @@ def create_app() -> FastAPI:
             result = service.ask(
                 request.query,
                 top_k=request.top_k,
-                document_id=request.document_id,
+                filters=request.to_search_filters(),
                 strategy=request.strategy,
             )
             return AnswerResponse.model_validate(result.to_dict())

@@ -11,6 +11,10 @@ For each question:
 4. Optionally assign positive integer grades, where larger means more relevant.
 5. Add a short annotation note so another person can audit the label.
 
+An evaluation query may include `document_id`, `section`, `page_from`, and
+`page_to`. Use them only when the user-facing task itself supplies that scope;
+do not add filters merely to make retrieval scores look better.
+
 Start with 30 reviewed questions across factual, terminology, comparison, and
 multi-evidence categories. Grow to 100-200 only after the annotation process is
 consistent.
