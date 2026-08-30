@@ -1,35 +1,51 @@
 # PaperRAG
 
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 An evaluation-driven RAG system for academic papers with hybrid retrieval,
-reranking, and verifiable citations.
+cross-encoder reranking, multi-paper query decomposition, and verified
+page-level citations.
 
-> Status: evaluation-ready advanced RAG baseline. PaperRAG combines dense and
-> BM25 retrieval with Reciprocal Rank Fusion, optionally applies multilingual
-> cross-encoder reranking, supports metadata-constrained search, and returns
-> grounded DeepSeek answers with citations.
+> **Status:** complete portfolio-ready RAG baseline. The repository includes a
+> FastAPI backend, Streamlit interface, frozen public-paper corpus, 30-question
+> retrieval benchmark, 10-question generation benchmark, and 114 automated
+> tests.
 
-## Why PaperRAG?
+## Highlights
+
+- Parses text-based PDFs while preserving document, section, and physical page
+  metadata for auditable citations.
+- Combines multilingual dense retrieval and BM25 with Reciprocal Rank Fusion,
+  then optionally reranks candidates with a multilingual cross-encoder.
+- Decomposes named multi-paper questions into document-filtered subqueries and
+  merges balanced evidence rankings.
+- Generates DeepSeek answers from retrieved evidence only, validates every
+  source marker, repairs citation-format failures without weakening validation,
+  and abstains when evidence is insufficient.
+- Measures retrieval with Recall@K, MRR, and nDCG; measures generation with
+  citation precision/recall/validity and abstention accuracy.
+
+Measured development-set results:
+
+- Query decomposition raised full-benchmark Recall@10 from **31.67% to 35.92%**.
+- On cross-paper questions, Recall@10 rose from **11.67% to 24.42%**.
+- The first real generation run achieved **100% citation validity** and **100%
+  abstention accuracy**, while exposing low strict citation recall as the next
+  retrieval/annotation problem to solve.
+
+See the [retrieval experiments](docs/evaluation.md), [generation
+experiments](docs/generation_evaluation.md), [five-minute demo](docs/demo.md),
+and [resume/interview notes](docs/resume.md).
+
+## Problem
 
 General-purpose RAG demos often lose document structure, miss exact technical
 terms, and return citations that are difficult to verify. PaperRAG focuses on
-academic papers and will improve these weaknesses through structure-aware
-chunking, hybrid retrieval, reranking, and evaluation.
+academic papers and makes those failure modes measurable instead of hiding them
+behind a chat interface.
 
-## MVP scope
-
-The first working version will:
-
-- import local PDF papers;
-- preserve paper, section, and page metadata;
-- split papers into retrievable chunks;
-- build a dense vector index;
-- answer questions using retrieved evidence;
-- return verifiable paper and page citations.
-
-The first version will not include an autonomous research agent, automatic web
-crawling, a knowledge graph, or multi-agent workflows.
-
-## Planned architecture
+## Architecture
 
 ```text
 PDF papers
@@ -38,6 +54,8 @@ PDF papers
 Document parsing -> Structure-aware chunking -> Qdrant chunk/vector index
                                                     |
 User question -> Query processing -> Hybrid retrieval -> Reranking
+                         |                          |
+                         +-> multi-paper split ----+
                                                     |
                                                     v
                                       Context assembly -> LLM
@@ -46,7 +64,7 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
                                       Answer + verified citations
 ```
 
-## Roadmap
+## Project status
 
 - [x] Define the project scope and repository structure
 - [x] Parse a text-based PDF and preserve section/page metadata
@@ -66,20 +84,24 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [ ] Add LLM-judged faithfulness and answer relevance
 - [x] Add a lightweight Streamlit user interface
 
-## Proposed technology stack
+Deliberately out of scope for this baseline: autonomous web crawling, knowledge
+graphs, and multi-agent research workflows. The next measured experiment is
+LLM-judged faithfulness and answer relevance calibrated against human scores.
+
+## Technology stack
 
 - Python 3.11+
 - FastAPI and Pydantic
-- Docling
+- pdfplumber
 - Qdrant
-- FastEmbed multilingual MiniLM baseline; BGE-M3 planned for comparison
-- Multilingual MiniLM cross-encoder baseline; BGE reranker planned for comparison
+- FastEmbed multilingual MiniLM
+- Multilingual MiniLM cross-encoder
 - DeepSeek Chat Completions API
 - pytest and Ruff
 - Streamlit
 
-Model and framework choices are provisional until they are validated on the
-project's evaluation set.
+The model choices are explicit baselines rather than claims that the largest
+available model is automatically best.
 
 ## Repository layout
 

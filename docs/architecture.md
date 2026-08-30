@@ -1,14 +1,15 @@
 # Architecture
 
-This document records design decisions and changes as PaperRAG evolves. It is
-deliberately short at project initialization; implementation details must be
-supported by code and experiments before being described as completed work.
+This document records implemented design decisions and their tradeoffs.
+Descriptions are backed by repository code and, where applicable, frozen
+experiments rather than planned features.
 
 ## Initial vertical slice
 
-The first end-to-end slice will process one PDF, preserve its paper/section/page
-metadata, create retrievable chunks, return the most relevant chunks for a
-question, and expose the source metadata needed for citation.
+The first end-to-end slice processed one PDF, preserved paper/section/page
+metadata, created retrievable chunks, returned ranked evidence, and exposed the
+source metadata needed for citation. Later decisions extend that slice without
+changing its citation contract.
 
 ## Decision 001: start with an inspectable PDF parser
 
@@ -167,12 +168,46 @@ annotation candidates per question, but all relevance labels remain empty until
 a human reviews the cited pages; the project never converts retrieval output
 into fake ground truth.
 
-## Planned retrieval experiments
+## Decision 012: document-aware query decomposition
 
-1. Dense retrieval baseline.
-2. BM25 baseline.
-3. Dense + BM25 using Reciprocal Rank Fusion.
-4. Hybrid retrieval followed by cross-encoder reranking.
-5. Recursive chunking compared with structure-aware chunking.
+A single Top-K list under-represented evidence for cross-paper questions. The
+decomposer reads stable document IDs, titles, and aliases from the versioned
+corpus manifest. Questions that name at least two papers are expanded into one
+focused query per paper, each with a Qdrant document filter. The existing Hybrid
+plus reranker pipeline runs independently for every subquery, and RRF merges the
+rankings into one balanced context budget.
 
-Every comparison will use the same labeled queries and corpus snapshot.
+Longer aliases are matched first so `Self-RAG` and `CRAG` do not accidentally
+trigger the shorter `RAG` alias. Explicit user document filters take precedence
+and disable decomposition. The method is deterministic and makes no additional
+LLM request. On the frozen development benchmark it more than doubled
+cross-paper Recall@10, from 11.67% to 24.42%.
+
+## Decision 013: separate generation labels, predictions, and scoring
+
+Generation evaluation stores human answerability/support labels separately from
+saved model predictions. A prediction records the answer, abstention decision,
+cited chunks, retrieved chunks, and exact supplied evidence. Offline scoring
+then computes citation precision, recall, F1, validity, and abstention accuracy
+without another model call.
+
+DeepSeek outputs must use valid JSON and consistent source markers. A validation
+failure may receive a bounded repair request containing the error and previous
+output; the repaired response is subjected to the same checks. The application
+never invents or silently appends a citation. Full predictions stay local while
+aggregate experiment results are committed.
+
+## Current limitations
+
+- The benchmark contains four papers and remains a development set rather than
+  a held-out production estimate.
+- The parser handles text-based PDFs but does not perform OCR or fully recover
+  complex tables and multi-column layouts.
+- The inspectable BM25 baseline rebuilds statistics from Qdrant payloads for
+  every query and is intended for small corpora.
+- Query decomposition depends on explicit paper aliases or collective markers;
+  it does not yet infer implicit comparison targets.
+- Faithfulness and answer relevance still need a versioned judge prompt
+  calibrated against human scores.
+- Strict citation recall shows that overlapping chunks and Top-K context
+  selection need another controlled experiment.
