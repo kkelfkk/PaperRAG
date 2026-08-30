@@ -21,6 +21,7 @@ from app.api.schemas import (
     SearchResponse,
 )
 from app.api.service import PaperRAGService, create_default_service
+from app.generation.grounded import CitationValidationError
 from app.generation.llm import LLMError
 from app.ingestion.pdf_parser import PDFParseError
 from app.retrieval.dense import DenseRetrievalError
@@ -54,6 +55,14 @@ def get_service(request: Request) -> PaperRAGService:
 
 
 def _raise_service_error(exc: Exception) -> None:
+    if isinstance(exc, CitationValidationError):
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "模型返回的引用格式连续校验失败，请重新运行，或切换为"
+                "“只查看检索证据”。"
+            ),
+        ) from exc
     if isinstance(exc, LLMError):
         status = 503 if "not configured" in str(exc) else 502
     elif isinstance(exc, PDFParseError):

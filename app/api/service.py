@@ -19,7 +19,7 @@ from app.generation.llm import (
     DeepSeekClient,
     LLMError,
 )
-from app.generation.models import GroundedAnswer
+from app.generation.models import GenerationConfig, GroundedAnswer
 from app.ingestion.pdf_parser import parse_pdf
 from app.reranking.cross_encoder import (
     DEFAULT_RERANKER_MODEL,
@@ -193,7 +193,14 @@ def create_default_service() -> PaperRAGService:
             model_name=os.getenv("DEEPSEEK_MODEL", DEFAULT_DEEPSEEK_MODEL),
             base_url=os.getenv("DEEPSEEK_BASE_URL", DEFAULT_DEEPSEEK_BASE_URL),
         )
-        answer_generator = GroundedAnswerGenerator(llm)
+        answer_generator = GroundedAnswerGenerator(
+            llm,
+            GenerationConfig(
+                max_validation_retries=int(
+                    os.getenv("GENERATION_MAX_VALIDATION_RETRIES", "2")
+                )
+            ),
+        )
     reranker = SentenceTransformersCrossEncoder(
         model_name=os.getenv("RERANKER_MODEL", DEFAULT_RERANKER_MODEL),
         device=os.getenv("RERANKER_DEVICE") or None,

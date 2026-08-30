@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 
 import app.api.main as api_main
 from app.api.main import create_app, get_service
+from app.generation.grounded import CitationValidationError
 from app.generation.llm import LLMError
 from app.generation.models import Citation, GroundedAnswer
 from app.retrieval.filters import SearchFilters
@@ -272,6 +273,21 @@ def test_ask_without_deepseek_configuration_returns_503(
 
     assert response.status_code == 503
     assert "not configured" in response.json()["detail"]
+
+
+def test_citation_validation_error_returns_safe_message(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, service = api_client
+    service.ask_error = CitationValidationError(
+        "declared=['S3'], markers=[] with internal output"
+    )
+
+    response = client.post("/v1/ask", json={"query": "question"})
+
+    assert response.status_code == 502
+    assert "引用格式连续校验失败" in response.json()["detail"]
+    assert "S3" not in response.json()["detail"]
 
 
 def test_request_validation_rejects_invalid_top_k(
