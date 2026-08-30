@@ -67,3 +67,26 @@ Use `--strategy dense`, `--strategy bm25`, `--strategy hybrid`,
 same dataset to make a controlled comparison. The reranking strategies require
 the `rerank` optional dependency. Decomposition reads paper IDs and aliases
 from `--corpus-manifest` (default: `configs/eval_corpus.json`).
+
+## Generation evaluation
+
+`generation.template.json` stores human-reviewed answerability and relevant
+chunk labels. `generation_predictions.template.json` stores outputs from one
+fixed retrieval/generation configuration. Keep labels and predictions separate
+so changing a system cannot silently change the ground truth.
+
+For answerable questions, record every acceptable supporting chunk. For
+unanswerable questions, set `expected_abstention` to `true`, keep
+`relevant_chunk_ids` empty, and document how absence was checked. Save the
+retrieved evidence text in predictions so later LLM-as-a-judge experiments can
+reuse exactly the same context.
+
+```bash
+uv run python -m app.evaluation.generation_cli \
+  data/eval/my_generation_labels.json \
+  data/eval/my_generation_predictions.json \
+  --output data/eval/results/generation-report.json
+```
+
+The command is offline and deterministic: it does not call DeepSeek or any
+embedding service.

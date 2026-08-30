@@ -62,7 +62,8 @@ User question -> Query processing -> Hybrid retrieval -> Reranking
 - [x] Add document, section, and page-range metadata filters
 - [x] Compare four retrieval strategies on the first 10 labeled questions
 - [x] Add query decomposition for cross-paper comparison questions
-- [ ] Evaluate faithfulness, answer relevance, and citation quality
+- [x] Evaluate citation precision/recall, citation validity, and abstention
+- [ ] Add LLM-judged faithfulness and answer relevance
 - [x] Add a lightweight Streamlit user interface
 
 ## Proposed technology stack
@@ -360,6 +361,24 @@ Retrieval will be measured with Recall@5, Recall@10, MRR@10, and nDCG@10.
 Generation will be evaluated for faithfulness, answer relevance, citation
 precision/recall, and abstention accuracy. Experimental results will only be
 published after they can be reproduced from committed configurations.
+
+The deterministic generation evaluator is available now. Copy the two
+templates in `data/eval/`, add human-reviewed labels and saved system outputs,
+then run:
+
+```bash
+uv run python -m app.evaluation.generation_cli \
+  data/eval/my_generation_labels.json \
+  data/eval/my_generation_predictions.json \
+  --output data/eval/results/generation-report.json
+```
+
+It reports chunk-level citation precision, recall, F1, citation validity
+(whether every citation came from retrieved context), and abstention accuracy.
+Saving evidence text beside each prediction prepares the same frozen outputs
+for later faithfulness and answer-relevance judging without calling the answer
+model again. See [`docs/generation_evaluation.md`](docs/generation_evaluation.md)
+for definitions and limitations.
 
 ## License
 

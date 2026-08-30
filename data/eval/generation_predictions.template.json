@@ -1,0 +1,30 @@
+{
+  "dataset_name": "paperrag-generation-dev",
+  "dataset_version": "0.1.0",
+  "system_name": "replace-with-fixed-retrieval-and-generation-configuration",
+  "model": "replace-with-llm-model-name",
+  "predictions": [
+    {
+      "query_id": "answerable-001",
+      "answer": "Saved model answer with its source marker [S1].",
+      "abstained": false,
+      "cited_chunk_ids": [
+        "replace-with-cited-chunk-id"
+      ],
+      "retrieved_chunk_ids": [
+        "replace-with-retrieved-chunk-id"
+      ],
+      "evidence": {
+        "replace-with-retrieved-chunk-id": "Saved source text for future faithfulness judging."
+      }
+    },
+    {
+      "query_id": "unanswerable-001",
+      "answer": "Insufficient evidence.",
+      "abstained": true,
+      "cited_chunk_ids": [],
+      "retrieved_chunk_ids": [],
+      "evidence": {}
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "paperrag-generation-dev",
+  "version": "0.1.0",
+  "description": "Replace placeholders with manually reviewed answerability and citation labels.",
+  "corpus_id": "replace-with-corpus-snapshot-id",
+  "queries": [
+    {
+      "query_id": "answerable-001",
+      "question": "Replace with a question answered by the corpus.",
+      "expected_abstention": false,
+      "relevant_chunk_ids": [
+        "replace-with-relevant-chunk-id"
+      ],
+      "reference_answer": "Optional concise human reference answer.",
+      "notes": "Record why the evidence supports the expected answer."
+    },
+    {
+      "query_id": "unanswerable-001",
+      "question": "Replace with a question the fixed corpus cannot answer.",
+      "expected_abstention": true,
+      "relevant_chunk_ids": [],
+      "notes": "Record how corpus-wide absence was checked."
+    }
+  ]
+}
