@@ -90,3 +90,9 @@ uv run python -m app.evaluation.generation_cli \
 
 The command is offline and deterministic: it does not call DeepSeek or any
 embedding service.
+
+The committed `paperrag_generation_10.json` development set can be run through
+the real pipeline with `python -m app.evaluation.generation_run_cli`. Unlike the
+scoring command above, the run command calls DeepSeek and sends retrieved paper
+text to the configured API endpoint. Store its output under
+`data/eval/results/`; this directory is intentionally ignored by Git.

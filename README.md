@@ -380,6 +380,23 @@ for later faithfulness and answer-relevance judging without calling the answer
 model again. See [`docs/generation_evaluation.md`](docs/generation_evaluation.md)
 for definitions and limitations.
 
+`data/eval/paperrag_generation_10.json` is the first development set: six
+answerable questions inherit frozen chunk labels from the retrieval benchmark,
+and four deliberately out-of-scope questions test abstention. Generate one
+saved prediction file with:
+
+```bash
+uv run python -m app.evaluation.generation_run_cli \
+  data/eval/paperrag_generation_10.json \
+  --output data/eval/results/paperrag_generation_10_predictions.json \
+  --db-path storage/qdrant_eval \
+  --collection paperrag_eval_v1
+```
+
+This command makes external DeepSeek API calls and sends each question plus
+its retrieved paper passages. Use it only for documents you are allowed to
+send to that provider. Prediction files remain local and are ignored by Git.
+
 ## License
 
 This project is licensed under the MIT License.

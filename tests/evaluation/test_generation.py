@@ -137,3 +137,26 @@ def test_generation_files_load_and_cli_writes_report(
 
     assert main([str(dataset_path), str(predictions_path), "-o", str(output_path)]) == 0
     assert json.loads(output_path.read_text(encoding="utf-8"))["query_count"] == 2
+
+
+def test_generation_run_cli_rejects_missing_collection(tmp_path: Path) -> None:
+    dataset_path = tmp_path / "labels.json"
+    dataset_path.write_text(_dataset().model_dump_json(), encoding="utf-8")
+
+    from app.evaluation.generation_run_cli import main
+
+    assert (
+        main(
+            [
+                str(dataset_path),
+                "--output",
+                str(tmp_path / "predictions.json"),
+                "--db-path",
+                str(tmp_path / "qdrant"),
+                "--collection",
+                "missing",
+            ]
+        )
+        == 2
+    )
+    assert not (tmp_path / "predictions.json").exists()

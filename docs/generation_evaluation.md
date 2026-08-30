@@ -34,6 +34,12 @@ The evaluator rejects missing or unexpected query IDs and mismatched dataset
 versions. It makes no network calls, so the same files always produce the same
 report.
 
+`app.evaluation.generation_run_cli` automates step 3 for the local Qdrant
+corpus. It records the fixed strategy, Top-K, retrieval model chain, answer
+model, cited chunks, retrieved chunks, and exact evidence. This command invokes
+DeepSeek and transmits the question and retrieved passages; the offline scoring
+command does not.
+
 ## Limitations and next experiment
 
 Chunk overlap can make multiple passages valid evidence for the same claim, so

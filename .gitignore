@@ -28,6 +28,7 @@ venv/
 data/papers/*
 !data/papers/.gitkeep
 data/eval/work/
+data/eval/results/
 storage/
 models/
 :memory:.ses

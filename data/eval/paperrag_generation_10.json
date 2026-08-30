@@ -1,0 +1,78 @@
+{
+  "name": "paperrag-generation-10",
+  "version": "0.1.0",
+  "description": "Development set with six answerable questions copied from the frozen retrieval benchmark and four deliberately out-of-scope questions for abstention testing.",
+  "corpus_id": "paperrag-agent-rag-v1",
+  "queries": [
+    {
+      "query_id": "rag-fact-001",
+      "question": "RAG 模型中的参数化记忆和非参数化记忆分别由什么组成？",
+      "expected_abstention": false,
+      "relevant_chunk_ids": ["98917e49d604e8a6cfab2ceb", "110e608a0cba4adf094d986e"],
+      "notes": "Labels inherited unchanged from paperrag_retrieval_10.json."
+    },
+    {
+      "query_id": "rag-term-002",
+      "question": "RAG-Sequence 和 RAG-Token 在使用检索文档时有什么区别？",
+      "expected_abstention": false,
+      "relevant_chunk_ids": ["0d3ca9040052f75da2e7e7b1", "2585e6c02a15763152a808d8", "3238601bf3432d323a5fc68d"],
+      "notes": "Labels inherited unchanged from paperrag_retrieval_10.json."
+    },
+    {
+      "query_id": "rag-fact-003",
+      "question": "原始 RAG 系统如何构建 Wikipedia 文档索引？",
+      "expected_abstention": false,
+      "relevant_chunk_ids": ["660f784e6237766f7cd15a8c", "878e605819c077a6ba5282a6"],
+      "notes": "Labels inherited unchanged from paperrag_retrieval_10.json."
+    },
+    {
+      "query_id": "react-term-001",
+      "question": "ReAct 如何交错生成 reasoning traces 和 task-specific actions？",
+      "expected_abstention": false,
+      "relevant_chunk_ids": ["a6382804d5e0206f3f90940a", "0294c2715f0c36e4b9ced544", "c3695100eef59126cac82e2f"],
+      "notes": "Labels inherited unchanged from paperrag_retrieval_10.json."
+    },
+    {
+      "query_id": "react-fact-002",
+      "question": "推理轨迹和外部行动在 ReAct 中分别发挥什么作用？",
+      "expected_abstention": false,
+      "relevant_chunk_ids": ["a6382804d5e0206f3f90940a", "adabcb5008bd8da46584a939"],
+      "notes": "Labels inherited unchanged from paperrag_retrieval_10.json."
+    },
+    {
+      "query_id": "react-fact-004",
+      "question": "ReAct 在 ALFWorld 和 WebShop 上报告了怎样的性能提升？",
+      "expected_abstention": false,
+      "relevant_chunk_ids": ["c18c4a2fe4b442baac0a9c74", "1fcc03b81b754efc58f513a2", "8995221212aefb14f988a29f", "8cf2a3cb7d9c77c8ee996450"],
+      "notes": "Labels inherited unchanged from paperrag_retrieval_10.json."
+    },
+    {
+      "query_id": "unanswerable-001",
+      "question": "这四篇论文报告了 GPT-5 在 2026 年 MATH 基准上的准确率是多少？",
+      "expected_abstention": true,
+      "relevant_chunk_ids": [],
+      "notes": "The pinned papers predate GPT-5 and cannot contain a 2026 result."
+    },
+    {
+      "query_id": "unanswerable-002",
+      "question": "这些论文推荐哪种药物治疗阿尔茨海默病？",
+      "expected_abstention": true,
+      "relevant_chunk_ids": [],
+      "notes": "The corpus covers language-model retrieval and agents, not clinical treatment."
+    },
+    {
+      "query_id": "unanswerable-003",
+      "question": "CRAG 论文提出的量子纠错码需要多少个物理量子比特？",
+      "expected_abstention": true,
+      "relevant_chunk_ids": [],
+      "notes": "CRAG concerns corrective retrieval-augmented generation, not quantum error correction."
+    },
+    {
+      "query_id": "unanswerable-004",
+      "question": "ReAct 作者如何评价 2025 年正式生效后的欧盟 AI 法案？",
+      "expected_abstention": true,
+      "relevant_chunk_ids": [],
+      "notes": "The ReAct paper predates the event asked about."
+    }
+  ]
+}
