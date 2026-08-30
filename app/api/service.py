@@ -37,7 +37,7 @@ from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
 from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever
-from app.retrieval.models import IndexReport, SearchResponse
+from app.retrieval.models import IndexedDocument, IndexReport, SearchResponse
 
 
 class PaperRAGService:
@@ -70,6 +70,10 @@ class PaperRAGService:
         )
         self.answer_generator = answer_generator
         self._lock = threading.RLock()
+
+    @property
+    def collection_name(self) -> str:
+        return self.retriever.collection_name
 
     def index_pdf(
         self,
@@ -117,6 +121,10 @@ class PaperRAGService:
                 top_k=top_k,
                 filters=filters,
             )
+
+    def list_documents(self) -> tuple[IndexedDocument, ...]:
+        with self._lock:
+            return self.retriever.list_documents()
 
     def ask(
         self,

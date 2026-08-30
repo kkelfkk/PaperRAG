@@ -13,11 +13,12 @@ from app.generation.grounded import CitationValidationError
 from app.generation.llm import LLMError
 from app.generation.models import Citation, GroundedAnswer
 from app.retrieval.filters import SearchFilters
-from app.retrieval.models import IndexReport, SearchHit, SearchResponse
+from app.retrieval.models import IndexedDocument, IndexReport, SearchHit, SearchResponse
 
 
 class FakeService:
     def __init__(self) -> None:
+        self.collection_name = "paperrag_dense"
         self.upload_path: Path | None = None
         self.upload_exists_during_call = False
         self.upload_header = b""
@@ -25,6 +26,17 @@ class FakeService:
         self.ask_error: Exception | None = None
         self.search_options: dict[str, object] = {}
         self.ask_options: dict[str, object] = {}
+
+    def list_documents(self) -> tuple[IndexedDocument, ...]:
+        return (
+            IndexedDocument(
+                document_id="doc-1",
+                title="Paper",
+                source_file="paper.pdf",
+                chunk_count=3,
+                indexed_pages=2,
+            ),
+        )
 
     def index_pdf(
         self, pdf_path: Path, *, source_name: str, **kwargs: object
@@ -127,6 +139,28 @@ def test_upload_indexes_pdf_and_removes_temporary_file(
     assert service.source_name == "paper.pdf"
     assert service.upload_path is not None
     assert not service.upload_path.exists()
+
+
+def test_list_documents_returns_persistent_index_summaries(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, _ = api_client
+
+    response = client.get("/v1/documents")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "collection_name": "paperrag_dense",
+        "documents": [
+            {
+                "document_id": "doc-1",
+                "title": "Paper",
+                "source_file": "paper.pdf",
+                "chunk_count": 3,
+                "indexed_pages": 2,
+            }
+        ],
+    }
 
 
 def test_upload_rejects_non_pdf(api_client: tuple[TestClient, FakeService]) -> None:

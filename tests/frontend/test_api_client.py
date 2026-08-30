@@ -51,6 +51,23 @@ def test_health_and_search_use_expected_endpoints_and_filters() -> None:
     http_client.close()
 
 
+def test_list_documents_uses_document_endpoint() -> None:
+    captured: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured.append(request.url.path)
+        return httpx.Response(
+            200,
+            json={"collection_name": "papers", "documents": []},
+        )
+
+    client, http_client = _client(httpx.MockTransport(handler))
+
+    assert client.list_documents()["documents"] == []
+    assert captured == ["/v1/documents"]
+    http_client.close()
+
+
 def test_ask_omits_empty_optional_filters() -> None:
     captured: dict[str, object] = {}
 

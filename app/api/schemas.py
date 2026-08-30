@@ -23,6 +23,19 @@ class IndexResponse(BaseModel):
     embedding_model: str
 
 
+class DocumentSummaryResponse(BaseModel):
+    document_id: str
+    title: str
+    source_file: str
+    chunk_count: int
+    indexed_pages: int
+
+
+class DocumentListResponse(BaseModel):
+    collection_name: str
+    documents: list[DocumentSummaryResponse]
+
+
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=4000)
     top_k: int = Field(default=5, ge=1, le=50)

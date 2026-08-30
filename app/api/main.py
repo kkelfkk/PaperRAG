@@ -15,6 +15,7 @@ from fastapi.concurrency import run_in_threadpool
 from app.api.schemas import (
     AnswerResponse,
     AskRequest,
+    DocumentListResponse,
     HealthResponse,
     IndexResponse,
     SearchRequest,
@@ -132,6 +133,24 @@ def create_app() -> FastAPI:
             await file.close()
             if temp_path is not None:
                 temp_path.unlink(missing_ok=True)
+
+    @application.get(
+        "/v1/documents",
+        response_model=DocumentListResponse,
+        tags=["documents"],
+    )
+    def list_documents(
+        service: Annotated[PaperRAGService, Depends(get_service)],
+    ) -> DocumentListResponse:
+        try:
+            return DocumentListResponse(
+                collection_name=service.collection_name,
+                documents=[
+                    document.to_dict() for document in service.list_documents()
+                ],
+            )
+        except (DenseRetrievalError, OSError, ValueError) as exc:
+            _raise_service_error(exc)
 
     @application.post("/v1/search", response_model=SearchResponse, tags=["retrieval"])
     def search(

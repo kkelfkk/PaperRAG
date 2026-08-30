@@ -24,6 +24,16 @@ def get_client(base_url: str) -> PaperRAGAPIClient:
     return PaperRAGAPIClient(base_url)
 
 
+def _store_documents(client: PaperRAGAPIClient, base_url: str) -> list[dict[str, Any]]:
+    payload = client.list_documents()
+    documents = payload.get("documents", [])
+    if not isinstance(documents, list):
+        raise PaperRAGAPIError("论文列表格式不正确。")
+    st.session_state["indexed_documents"] = documents
+    st.session_state["documents_base_url"] = base_url
+    return documents
+
+
 def render_hits(payload: dict[str, Any]) -> None:
     hits = payload.get("hits", [])
     if not hits:
@@ -41,7 +51,8 @@ def render_hits(payload: dict[str, Any]) -> None:
         with st.expander(label, expanded=hit.get("rank") == 1):
             st.caption(
                 f"score={float(hit.get('score', 0)):.4f} · "
-                f"chunk_id={hit.get('chunk_id')}"
+                f"chunk_id={hit.get('chunk_id')} · "
+                f"document_id={hit.get('document_id')}"
             )
             st.write(hit.get("text", ""))
 
@@ -82,9 +93,50 @@ def main() -> None:
         if st.button("检查 API", use_container_width=True):
             try:
                 health = client.health()
+                _store_documents(client, base_url)
                 st.success(f"API 正常 · v{health.get('version')}")
             except (PaperRAGAPIError, ValueError) as exc:
                 st.error(str(exc))
+
+        st.divider()
+        st.header("论文库")
+        if st.session_state.get("documents_base_url") != base_url:
+            st.session_state["indexed_documents"] = []
+        if st.button("加载 / 刷新论文列表", use_container_width=True):
+            try:
+                _store_documents(client, base_url)
+            except (PaperRAGAPIError, ValueError) as exc:
+                st.error(str(exc))
+        documents = st.session_state.get("indexed_documents", [])
+        document_lookup = {
+            str(document.get("document_id")): document for document in documents
+        }
+        document_options = [""] + list(document_lookup)
+
+        def document_label(document_id: str) -> str:
+            if not document_id:
+                return "全部已索引论文"
+            document = document_lookup[document_id]
+            return f"{document.get('title', 'Untitled')} · {document_id[:8]}"
+
+        selected_document_id = st.selectbox(
+            "检索范围",
+            options=document_options,
+            format_func=document_label,
+        )
+        document_id = selected_document_id or None
+        if documents:
+            with st.expander(f"已索引 {len(documents)} 篇论文"):
+                for document in documents:
+                    st.markdown(f"**{document.get('title', 'Untitled')}**")
+                    st.caption(
+                        f"{document.get('source_file')} · "
+                        f"{document.get('chunk_count')} chunks · "
+                        f"{document.get('indexed_pages')} 页 · "
+                        f"ID: {document.get('document_id')}"
+                    )
+        else:
+            st.caption("点击上方按钮读取已建立索引的论文。")
 
         st.divider()
         st.header("检索设置")
@@ -93,7 +145,6 @@ def main() -> None:
         if strategy == "decomposed_hybrid_rerank":
             st.caption("识别问题中的论文名称，分论文检索后合并证据。")
         top_k = st.slider("返回证据数 Top-K", min_value=1, max_value=20, value=5)
-        document_id = st.text_input("限定 document_id（可选）").strip() or None
         section = st.text_input("限定章节（可选，精确匹配）").strip() or None
         use_page_range = st.checkbox("限定页码范围")
         page_from: int | None = None
@@ -119,6 +170,10 @@ def main() -> None:
 
     with index_tab:
         st.subheader("上传并建立索引")
+        if success_message := st.session_state.pop("index_success", None):
+            st.success(success_message)
+        if refresh_error := st.session_state.pop("document_refresh_error", None):
+            st.warning(refresh_error)
         uploaded = st.file_uploader("选择文本型 PDF", type=["pdf"])
         settings = st.expander("切块参数")
         with settings:
@@ -140,23 +195,26 @@ def main() -> None:
                         max_chunk_chars=int(max_chars),
                         overlap_chars=int(overlap),
                     )
-                st.session_state["last_document_id"] = report.get("document_id")
-                st.success(
+                st.session_state["index_success"] = (
                     f"索引完成：{report.get('indexed_chunks')} 个 chunks，"
                     f"document_id = {report.get('document_id')}"
                 )
-                st.json(report)
+                try:
+                    _store_documents(client, base_url)
+                except (PaperRAGAPIError, ValueError) as exc:
+                    st.session_state["document_refresh_error"] = (
+                        f"索引成功，但刷新论文列表失败：{exc}"
+                    )
+                st.rerun()
             except (PaperRAGAPIError, ValueError) as exc:
                 st.error(str(exc))
 
     with query_tab:
         st.subheader("向论文提问")
-        last_document = st.session_state.get("last_document_id")
-        if last_document and not document_id:
-            st.info(
-                f"刚刚索引的 document_id：{last_document}。"
-                "如需只搜索该论文，请复制到侧边栏。"
-            )
+        if document_id:
+            st.info(f"当前只检索：{document_label(document_id)}")
+        else:
+            st.info("当前检索全部已索引论文。")
         mode = st.radio("运行模式", ["生成带引用回答", "只查看检索证据"], horizontal=True)
         query = st.text_area(
             "问题",

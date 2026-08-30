@@ -124,6 +124,37 @@ def test_document_filter_limits_results(client: QdrantClient) -> None:
     assert [hit.document_id for hit in response.hits] == ["doc-2"]
 
 
+def test_list_documents_groups_chunks_and_sorts_titles(client: QdrantClient) -> None:
+    retriever = DenseRetriever(client, KeywordEmbedder())
+    retriever.index_document(
+        [
+            _chunk("doc-2-a", "agent", document_id="doc-2", page_number=1),
+            _chunk(
+                "doc-2-b",
+                "tool",
+                document_id="doc-2",
+                page_number=3,
+                chunk_index=1,
+            ),
+        ]
+    )
+    retriever.index_document(
+        [_chunk("doc-1-a", "retrieval", document_id="doc-1", page_number=2)]
+    )
+
+    documents = retriever.list_documents()
+
+    assert [document.document_id for document in documents] == ["doc-1", "doc-2"]
+    assert documents[1].chunk_count == 2
+    assert documents[1].indexed_pages == 2
+
+
+def test_list_documents_returns_empty_for_missing_collection(
+    client: QdrantClient,
+) -> None:
+    assert DenseRetriever(client, KeywordEmbedder()).list_documents() == ()
+
+
 def test_section_and_page_range_filter_limits_dense_results(
     client: QdrantClient,
 ) -> None:

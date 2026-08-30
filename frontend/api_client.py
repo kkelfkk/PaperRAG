@@ -63,6 +63,9 @@ class PaperRAGAPIClient:
     def health(self) -> dict[str, Any]:
         return self._request("GET", "/health")
 
+    def list_documents(self) -> dict[str, Any]:
+        return self._request("GET", "/v1/documents")
+
     def index_pdf(
         self,
         filename: str,

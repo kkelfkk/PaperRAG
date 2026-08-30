@@ -21,6 +21,20 @@ class IndexReport:
 
 
 @dataclass(frozen=True, slots=True)
+class IndexedDocument:
+    """Summary of one document currently stored in the collection."""
+
+    document_id: str
+    title: str
+    source_file: str
+    chunk_count: int
+    indexed_pages: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
 class SearchHit:
     """One ranked retrieval result with source citation metadata."""
 

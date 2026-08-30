@@ -20,7 +20,7 @@ from app.retrieval.embeddings import (
 )
 from app.retrieval.filters import SearchFilters
 from app.retrieval.hybrid import HybridRetriever, reciprocal_rank_fusion
-from app.retrieval.models import IndexReport, SearchHit, SearchResponse
+from app.retrieval.models import IndexedDocument, IndexReport, SearchHit, SearchResponse
 
 __all__ = [
     "BM25_MODEL_NAME",
@@ -36,6 +36,7 @@ __all__ = [
     "FastEmbedProvider",
     "HybridRetriever",
     "IndexReport",
+    "IndexedDocument",
     "QueryPlan",
     "SearchFilters",
     "SearchHit",

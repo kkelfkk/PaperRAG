@@ -249,6 +249,7 @@ Open `http://127.0.0.1:8000/docs` for the interactive API interface. Available
 endpoints are:
 
 - `GET /health` - lightweight health check;
+- `GET /v1/documents` - list indexed papers with persistent IDs and counts;
 - `POST /v1/documents/index` - upload and index a PDF (50 MB limit);
 - `POST /v1/search` - return ranked evidence with source metadata;
 - `POST /v1/ask` - generate a validated DeepSeek answer with citations.
@@ -279,10 +280,11 @@ uv run streamlit run frontend/app.py
 ```
 
 Open `http://localhost:8501`. The interface supports PDF upload and indexing,
-all five retrieval strategies, document/section/page filters, evidence-only
-search, grounded answers, and expandable source passages. It communicates only
-with the local FastAPI service; the DeepSeek key remains in the API process's
-ignored `.env` file and is never sent to the browser.
+an indexed-paper list and title-based scope selector, all five retrieval
+strategies, document/section/page filters, evidence-only search, grounded
+answers, and expandable source passages. It communicates only with the local
+FastAPI service; the DeepSeek key remains in the API process's ignored `.env`
+file and is never sent to the browser.
 
 Copy the retrieval evaluation template and replace every placeholder with
 manually verified chunk IDs from one fixed corpus:

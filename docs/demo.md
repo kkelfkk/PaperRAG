@@ -44,7 +44,8 @@ Open `http://localhost:8501` and click **检查 API**.
 
 ## Demo sequence
 
-1. Select **Hybrid + Reranker** and **只查看检索证据**.
+1. Click **加载 / 刷新论文列表**, leave the scope at **全部已索引论文**,
+   then select **Hybrid + Reranker** and **只查看检索证据**.
 2. Ask: `RAG-Sequence 和 RAG-Token 在使用检索文档时有什么区别？`
 3. Expand the first passages and point out paper title, physical page, section,
    score, and stable chunk ID.

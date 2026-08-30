@@ -11,7 +11,7 @@ from qdrant_client import QdrantClient, models
 from app.chunking.models import DocumentChunk
 from app.retrieval.embeddings import EmbeddingProvider
 from app.retrieval.filters import SearchFilters
-from app.retrieval.models import IndexReport, SearchHit, SearchResponse
+from app.retrieval.models import IndexedDocument, IndexReport, SearchHit, SearchResponse
 
 DEFAULT_COLLECTION = "paperrag_dense"
 
@@ -179,6 +179,61 @@ class DenseRetriever:
             indexed_chunks=len(chunks),
             vector_size=vector_size,
             embedding_model=self.embedder.model_name,
+        )
+
+    def list_documents(self) -> tuple[IndexedDocument, ...]:
+        """Return one deterministic summary per indexed document."""
+
+        if not self.client.collection_exists(self.collection_name):
+            return ()
+
+        summaries: dict[str, dict[str, Any]] = {}
+        offset: Any = None
+        while True:
+            points, offset = self.client.scroll(
+                collection_name=self.collection_name,
+                limit=256,
+                offset=offset,
+                with_payload=[
+                    "document_id",
+                    "title",
+                    "source_file",
+                    "page_number",
+                ],
+                with_vectors=False,
+            )
+            for point in points:
+                document_id = str(_required_payload(point.payload, "document_id"))
+                summary = summaries.setdefault(
+                    document_id,
+                    {
+                        "title": str(_required_payload(point.payload, "title")),
+                        "source_file": str(
+                            _required_payload(point.payload, "source_file")
+                        ),
+                        "chunk_count": 0,
+                        "pages": set(),
+                    },
+                )
+                summary["chunk_count"] += 1
+                summary["pages"].add(
+                    int(_required_payload(point.payload, "page_number"))
+                )
+            if offset is None:
+                break
+
+        return tuple(
+            IndexedDocument(
+                document_id=document_id,
+                title=summary["title"],
+                source_file=summary["source_file"],
+                chunk_count=summary["chunk_count"],
+                indexed_pages=len(summary["pages"]),
+            )
+            for document_id, summary in sorted(
+                summaries.items(),
+                key=lambda item: (item[1]["title"].casefold(), item[0]),
+            )
         )
 
     def search(
