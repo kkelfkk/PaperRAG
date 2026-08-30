@@ -397,6 +397,27 @@ This command makes external DeepSeek API calls and sends each question plus
 its retrieved paper passages. Use it only for documents you are allowed to
 send to that provider. Prediction files remain local and are ignored by Git.
 
+### Current generation benchmark
+
+The first 10-question development run uses DeepSeek V4 Flash, document-aware
+Hybrid retrieval plus reranking, Top-5 context, six answerable questions, and
+four deliberately unanswerable questions:
+
+| Metric | Score |
+| --- | ---: |
+| Abstention accuracy | **100.00%** |
+| Citation validity | **100.00%** |
+| Citation precision | 27.78% |
+| Citation recall | 19.44% |
+| Citation F1 | 22.22% |
+
+The perfect validity score means every citation referred to context that was
+actually supplied; it does not mean every cited chunk matched the strict human
+gold label. Three of six answerable questions cited no gold chunk, revealing a
+retrieval/annotation-coverage weakness that would be hidden by reporting only
+well-formed citations. These are small development-set results, not final
+held-out performance.
+
 ## License
 
 This project is licensed under the MIT License.

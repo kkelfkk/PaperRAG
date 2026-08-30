@@ -11,10 +11,13 @@ class GenerationConfig:
     """Limits for assembling retrieved context."""
 
     max_context_chars: int = 12000
+    max_validation_retries: int = 0
 
     def __post_init__(self) -> None:
         if self.max_context_chars < 500:
             raise ValueError("max_context_chars must be at least 500")
+        if self.max_validation_retries < 0:
+            raise ValueError("max_validation_retries cannot be negative")
 
 
 @dataclass(frozen=True, slots=True)

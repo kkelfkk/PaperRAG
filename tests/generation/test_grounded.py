@@ -24,6 +24,18 @@ class FakeLLM:
         return json.dumps(self.payload, ensure_ascii=False)
 
 
+class SequenceLLM:
+    model_name = "test/llm"
+
+    def __init__(self, payloads: list[dict[str, object]]) -> None:
+        self.payloads = payloads
+        self.messages: list[Sequence[Mapping[str, str]]] = []
+
+    def complete(self, messages: Sequence[Mapping[str, str]]) -> str:
+        self.messages.append(messages)
+        return json.dumps(self.payloads.pop(0), ensure_ascii=False)
+
+
 def _hit(
     rank: int = 1,
     *,
@@ -63,6 +75,49 @@ def test_generate_returns_validated_citation_metadata() -> None:
     assert "[S1]" in prompt
     assert "Page: 3" in prompt
     assert "Retrieval augmented" in prompt
+
+
+def test_generate_accepts_grouped_source_markers() -> None:
+    llm = FakeLLM(
+        {
+            "answer": "The conclusion combines two passages. [S1, S2]",
+            "cited_source_ids": ["S1", "S2"],
+            "abstained": False,
+        }
+    )
+
+    result = GroundedAnswerGenerator(llm).generate(
+        "Compare the evidence", [_hit(1), _hit(2)]
+    )
+
+    assert [citation.source_id for citation in result.citations] == ["S1", "S2"]
+
+
+def test_generate_repairs_a_citation_invalid_response() -> None:
+    llm = SequenceLLM(
+        [
+            {
+                "answer": "The answer forgot its marker.",
+                "cited_source_ids": ["S1"],
+                "abstained": False,
+            },
+            {
+                "answer": "The corrected answer includes evidence. [S1]",
+                "cited_source_ids": ["S1"],
+                "abstained": False,
+            },
+        ]
+    )
+    generator = GroundedAnswerGenerator(
+        llm,
+        GenerationConfig(max_validation_retries=1),
+    )
+
+    result = generator.generate("question", [_hit()])
+
+    assert result.answer.endswith("[S1]")
+    assert len(llm.messages) == 2
+    assert "failed citation validation" in llm.messages[1][-1]["content"]
 
 
 def test_no_hits_abstains_without_calling_llm() -> None:
@@ -127,3 +182,8 @@ def test_context_budget_truncates_ranked_sources() -> None:
     assert "[S2]" not in prompt
     source_context = prompt.split("Sources:\n", maxsplit=1)[1]
     assert len(source_context) <= 500
+
+
+def test_generation_config_rejects_negative_validation_retries() -> None:
+    with pytest.raises(ValueError, match="cannot be negative"):
+        GenerationConfig(max_validation_retries=-1)

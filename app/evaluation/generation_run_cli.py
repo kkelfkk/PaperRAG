@@ -23,6 +23,7 @@ from app.generation.llm import (
     DeepSeekClient,
     LLMError,
 )
+from app.generation.models import GenerationConfig
 from app.reranking import (
     DEFAULT_RERANKER_MODEL,
     RerankingRetriever,
@@ -45,6 +46,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--collection", default="paperrag_eval_v1")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument(
+        "--max-generation-attempts",
+        type=int,
+        default=3,
+        help="Retry citation-invalid model outputs without weakening validation",
+    )
+    parser.add_argument(
         "--strategy",
         choices=("hybrid_rerank", "decomposed_hybrid_rerank"),
         default="decomposed_hybrid_rerank",
@@ -64,8 +71,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     load_dotenv()
     args = build_parser().parse_args(argv)
-    if args.top_k <= 0:
-        print("error: top_k must be positive", file=sys.stderr)
+    if args.top_k <= 0 or args.max_generation_attempts <= 0:
+        print("error: top_k and max_generation_attempts must be positive", file=sys.stderr)
         return 2
 
     qdrant: QdrantClient | None = None
@@ -97,7 +104,12 @@ def main(argv: Sequence[str] | None = None) -> int:
             model_name=args.llm_model,
             base_url=args.deepseek_base_url,
         )
-        generator = GroundedAnswerGenerator(llm)
+        generator = GroundedAnswerGenerator(
+            llm,
+            GenerationConfig(
+                max_validation_retries=args.max_generation_attempts - 1,
+            ),
+        )
         predictions: list[GenerationPrediction] = []
         retrieval_configuration = ""
 

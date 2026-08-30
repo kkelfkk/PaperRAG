@@ -51,3 +51,43 @@ The prediction format therefore preserves evidence text and an optional human
 reference answer. The next experiment will add a versioned judge prompt for
 claim-level faithfulness and answer relevance, calibrate it against a small
 human-scored subset, and report judge-model/version metadata with every score.
+
+## Experiment 001: first real generation run
+
+Run date: 2026-08-30
+
+### Fixed inputs
+
+- Dataset: `data/eval/paperrag_generation_10.json`, version `0.1.0`
+- Questions: six answerable and four deliberately out-of-scope
+- Corpus: the same pinned four-paper, 538-chunk snapshot used for retrieval
+- Retrieval: document-aware decomposition + Hybrid + cross-encoder reranking
+- Context: Top-5
+- Answer model: DeepSeek V4 Flash, non-thinking mode, temperature 0
+- Citation validation: unknown, missing, or inconsistent source IDs rejected;
+  validation-invalid JSON may receive up to two explicit repair attempts
+
+Predictions and evidence remain local under the ignored `data/eval/results/`
+directory. Only aggregate metrics are committed.
+
+### Results
+
+| Metric | Score |
+| --- | ---: |
+| Abstention accuracy | **100.00%** |
+| Citation validity | **100.00%** |
+| Citation precision | 27.78% |
+| Citation recall | 19.44% |
+| Citation F1 | 22.22% |
+
+All four unanswerable questions were correctly rejected, and every emitted
+citation pointed to a chunk that was actually supplied to the model. However,
+three of six answerable questions cited no chunk in the strict gold set. This
+is not an LLM citation-format failure: it shows that Top-5 retrieval often
+returns adjacent or semantically related passages rather than the exact chunks
+selected during annotation.
+
+The next controlled experiment should audit those three failures for acceptable
+overlapping evidence, then compare Top-5 with a diversified Top-10 context. Gold
+labels must be expanded only when a cited chunk independently supports the
+answer, never merely because the current system retrieved it.
