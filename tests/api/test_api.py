@@ -210,6 +210,20 @@ def test_api_accepts_hybrid_rerank_strategy(
     assert service.search_options["strategy"] == "hybrid_rerank"
 
 
+def test_api_accepts_decomposed_hybrid_rerank_strategy(
+    api_client: tuple[TestClient, FakeService],
+) -> None:
+    client, service = api_client
+
+    response = client.post(
+        "/v1/search",
+        json={"query": "比较 RAG 与 CRAG", "strategy": "decomposed_hybrid_rerank"},
+    )
+
+    assert response.status_code == 200
+    assert service.search_options["strategy"] == "decomposed_hybrid_rerank"
+
+
 def test_api_forwards_metadata_filters(
     api_client: tuple[TestClient, FakeService],
 ) -> None:

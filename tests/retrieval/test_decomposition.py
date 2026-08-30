@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +12,7 @@ from app.retrieval.decomposition import (
     AliasQueryDecomposer,
     DecomposedRetriever,
     DocumentTarget,
+    load_query_decomposer,
 )
 from app.retrieval.filters import SearchFilters
 from app.retrieval.models import SearchHit, SearchResponse
@@ -133,3 +136,33 @@ def test_passthrough_keeps_a_stable_strategy_identifier() -> None:
     response = retriever.search("RAG 如何检索？")
 
     assert response.embedding_model == "test-model|query_decomposition"
+
+
+def test_manifest_loader_supports_explicit_ids_and_aliases(tmp_path: Path) -> None:
+    manifest = tmp_path / "corpus.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "papers": [
+                    {
+                        "document_id": "paper-a",
+                        "title": "Paper Alpha",
+                        "aliases": ["Alpha", "论文甲"],
+                    },
+                    {
+                        "document_id": "paper-b",
+                        "title": "Paper Beta",
+                        "aliases": ["Beta", "论文乙"],
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    plans = load_query_decomposer(manifest).decompose("比较论文甲与论文乙")
+
+    assert [plan.target.document_id for plan in plans if plan.target] == [
+        "paper-a",
+        "paper-b",
+    ]

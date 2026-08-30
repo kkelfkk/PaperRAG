@@ -28,6 +28,11 @@ from app.reranking.cross_encoder import (
 )
 from app.reranking.retriever import RerankingRetriever
 from app.retrieval.bm25 import BM25Retriever
+from app.retrieval.decomposition import (
+    AliasQueryDecomposer,
+    DecomposedRetriever,
+    load_query_decomposer,
+)
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
 from app.retrieval.filters import SearchFilters
@@ -43,6 +48,7 @@ class PaperRAGService:
         retriever: DenseRetriever,
         answer_generator: GroundedAnswerGenerator | None = None,
         reranker: CrossEncoderProvider | None = None,
+        query_decomposer: AliasQueryDecomposer | None = None,
     ) -> None:
         self.retriever = retriever
         self.sparse_retriever = BM25Retriever(
@@ -56,6 +62,11 @@ class PaperRAGService:
         self.reranking_retriever = RerankingRetriever(
             self.hybrid_retriever,
             reranker or SentenceTransformersCrossEncoder(),
+        )
+        self.decomposed_retriever = (
+            DecomposedRetriever(self.reranking_retriever, query_decomposer)
+            if query_decomposer is not None
+            else None
         )
         self.answer_generator = answer_generator
         self._lock = threading.RLock()
@@ -131,7 +142,13 @@ class PaperRAGService:
     def _searcher(
         self,
         strategy: str,
-    ) -> DenseRetriever | BM25Retriever | HybridRetriever | RerankingRetriever:
+    ) -> (
+        DenseRetriever
+        | BM25Retriever
+        | HybridRetriever
+        | RerankingRetriever
+        | DecomposedRetriever
+    ):
         if strategy == "dense":
             return self.retriever
         if strategy == "bm25":
@@ -140,6 +157,10 @@ class PaperRAGService:
             return self.hybrid_retriever
         if strategy == "hybrid_rerank":
             return self.reranking_retriever
+        if strategy == "decomposed_hybrid_rerank":
+            if self.decomposed_retriever is None:
+                raise ValueError("query decomposition corpus manifest is not configured")
+            return self.decomposed_retriever
         raise ValueError(f"unknown retrieval strategy: {strategy}")
 
     def close(self) -> None:
@@ -177,4 +198,13 @@ def create_default_service() -> PaperRAGService:
         model_name=os.getenv("RERANKER_MODEL", DEFAULT_RERANKER_MODEL),
         device=os.getenv("RERANKER_DEVICE") or None,
     )
-    return PaperRAGService(retriever, answer_generator, reranker)
+    manifest_path = Path(
+        os.getenv("PAPERRAG_CORPUS_MANIFEST", "configs/eval_corpus.json")
+    )
+    query_decomposer = load_query_decomposer(manifest_path)
+    return PaperRAGService(
+        retriever,
+        answer_generator,
+        reranker,
+        query_decomposer,
+    )

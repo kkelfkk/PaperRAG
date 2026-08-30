@@ -20,9 +20,8 @@ from app.reranking import (
 from app.retrieval.bm25 import BM25Retriever
 from app.retrieval.cli import DEFAULT_DB_PATH
 from app.retrieval.decomposition import (
-    AliasQueryDecomposer,
     DecomposedRetriever,
-    DocumentTarget,
+    load_query_decomposer,
 )
 from app.retrieval.dense import DEFAULT_COLLECTION, DenseRetrievalError, DenseRetriever
 from app.retrieval.embeddings import DEFAULT_EMBEDDING_MODEL, FastEmbedProvider
@@ -62,23 +61,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _load_decomposer(path: Path) -> AliasQueryDecomposer:
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-        papers = payload["papers"]
-        targets = tuple(
-            DocumentTarget(
-                document_id=paper["sha256"][:16],
-                title=paper["title"],
-                aliases=(paper["short_name"], paper["title"]),
-            )
-            for paper in papers
-        )
-    except (json.JSONDecodeError, KeyError, TypeError) as exc:
-        raise ValueError(f"invalid corpus manifest: {path}") from exc
-    return AliasQueryDecomposer(targets)
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     qdrant: QdrantClient | None = None
@@ -116,7 +98,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                         retriever = (
                             DecomposedRetriever(
                                 reranked,
-                                _load_decomposer(args.corpus_manifest),
+                                load_query_decomposer(args.corpus_manifest),
                             )
                             if args.strategy == "decomposed_hybrid_rerank"
                             else reranked

@@ -231,7 +231,9 @@ endpoints are:
 - `POST /v1/ask` - generate a validated DeepSeek answer with citations.
 
 The `/v1/search` and `/v1/ask` JSON bodies accept `strategy` as `dense`, `bm25`,
-`hybrid`, or `hybrid_rerank`; the lightweight default remains `hybrid`.
+`hybrid`, `hybrid_rerank`, or `decomposed_hybrid_rerank`; the lightweight
+default remains `hybrid`. The decomposition strategy reads paper IDs and
+aliases from `PAPERRAG_CORPUS_MANIFEST`.
 They also accept optional `document_id`, `section`, `page_from`, and `page_to`
 filters.
 
@@ -254,7 +256,7 @@ uv run streamlit run frontend/app.py
 ```
 
 Open `http://localhost:8501`. The interface supports PDF upload and indexing,
-all four retrieval strategies, document/section/page filters, evidence-only
+all five retrieval strategies, document/section/page filters, evidence-only
 search, grounded answers, and expandable source passages. It communicates only
 with the local FastAPI service; the DeepSeek key remains in the API process's
 ignored `.env` file and is never sent to the browser.

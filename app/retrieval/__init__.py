@@ -6,6 +6,7 @@ from app.retrieval.decomposition import (
     DecomposedRetriever,
     DocumentTarget,
     QueryPlan,
+    load_query_decomposer,
 )
 from app.retrieval.dense import (
     DEFAULT_COLLECTION,
@@ -39,6 +40,7 @@ __all__ = [
     "SearchFilters",
     "SearchHit",
     "SearchResponse",
+    "load_query_decomposer",
     "reciprocal_rank_fusion",
     "tokenize",
 ]

@@ -30,7 +30,13 @@ class SearchRequest(BaseModel):
     section: str | None = Field(default=None, min_length=1, max_length=500)
     page_from: int | None = Field(default=None, ge=1)
     page_to: int | None = Field(default=None, ge=1)
-    strategy: Literal["dense", "bm25", "hybrid", "hybrid_rerank"] = "hybrid"
+    strategy: Literal[
+        "dense",
+        "bm25",
+        "hybrid",
+        "hybrid_rerank",
+        "decomposed_hybrid_rerank",
+    ] = "hybrid"
 
     @model_validator(mode="after")
     def validate_page_range(self) -> SearchRequest:

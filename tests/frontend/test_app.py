@@ -17,3 +17,6 @@ def test_streamlit_app_renders_without_exceptions() -> None:
     assert not rendered.exception
     assert [title.value for title in rendered.title] == ["📚 PaperRAG"]
     assert [tab.label for tab in rendered.tabs] == ["上传论文", "检索与问答"]
+    assert "多论文分解 + Hybrid + Reranker（跨论文推荐）" in rendered.selectbox[
+        0
+    ].options

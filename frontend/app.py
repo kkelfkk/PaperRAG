@@ -13,6 +13,9 @@ STRATEGIES = {
     "Dense 向量检索": "dense",
     "BM25 关键词检索": "bm25",
     "Hybrid + Reranker": "hybrid_rerank",
+    "多论文分解 + Hybrid + Reranker（跨论文推荐）": (
+        "decomposed_hybrid_rerank"
+    ),
 }
 
 
@@ -87,6 +90,8 @@ def main() -> None:
         st.header("检索设置")
         strategy_label = st.selectbox("检索策略", options=list(STRATEGIES))
         strategy = STRATEGIES[strategy_label]
+        if strategy == "decomposed_hybrid_rerank":
+            st.caption("识别问题中的论文名称，分论文检索后合并证据。")
         top_k = st.slider("返回证据数 Top-K", min_value=1, max_value=20, value=5)
         document_id = st.text_input("限定 document_id（可选）").strip() or None
         section = st.text_input("限定章节（可选，精确匹配）").strip() or None

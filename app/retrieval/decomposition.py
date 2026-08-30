@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Protocol
 
 from app.retrieval.dense import DenseRetrievalError
@@ -138,6 +140,27 @@ class AliasQueryDecomposer:
             )
             for target in targets
         )
+
+
+def load_query_decomposer(path: Path) -> AliasQueryDecomposer:
+    """Load document IDs and human-friendly aliases from a corpus manifest."""
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        papers = payload["papers"]
+        targets = tuple(
+            DocumentTarget(
+                document_id=paper.get("document_id") or paper["sha256"][:16],
+                title=paper["title"],
+                aliases=tuple(
+                    paper.get("aliases") or (paper["short_name"], paper["title"])
+                ),
+            )
+            for paper in papers
+        )
+    except (AttributeError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise ValueError(f"invalid corpus manifest: {path}") from exc
+    return AliasQueryDecomposer(targets)
 
 
 class DecomposedRetriever:
